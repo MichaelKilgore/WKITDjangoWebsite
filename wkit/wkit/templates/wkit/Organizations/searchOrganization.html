@@ -1,0 +1,40 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+
+<h1>Search Organizations</h1>
+
+<form style="background-color:#E6E6FA; padding: 10px;" method="post">
+{% csrf_token %}
+
+	<label for="search-type">Search by: </label>
+	<select id="search_type" name="search_type">
+		<option value="Name">Name</option>	
+		<option value="City">City</option>
+		<option value="full_scan">Full Scan</option>
+	</select>
+
+	<input id="search_entry" type="text" name="search_entry" value="{{ search_entry }}">
+	<input type="submit" value="Search" />
+	<br>
+</form>
+
+<table class="search-table">
+  <tr>
+    <th>Name</th>
+    <th>City</th> 
+  </tr>
+	{% for organization in organizations %}
+  <tr>
+    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.city }}</a></td>
+  </tr>
+	{% endfor %}
+</table>
+
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}

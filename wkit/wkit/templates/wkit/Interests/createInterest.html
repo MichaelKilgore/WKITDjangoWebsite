@@ -1,0 +1,27 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+<h1>Create Interest</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<ul class="form-style-1">
+	<li>
+		<label>Interest Name<span class="required">*</span></label>
+		<input id="interest_name" name="interest" type="interest-name" name="field3" class="field-long" />
+	</li>
+
+	<li>
+		<input type="submit" value="Submit" />
+	</li>
+	
+</ul>
+</form>
+
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}

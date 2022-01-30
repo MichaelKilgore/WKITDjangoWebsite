@@ -1,0 +1,41 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+
+<h1>Search Interests</h1>
+
+<form style="background-color:#E6E6FA; padding: 10px;" method="post">
+{% csrf_token %}
+
+	<label for="search-type">Search: </label>
+	<input id="search-entry" type="text" name="search_entry">
+	<input type="submit" value="Search" />
+	<br>
+</form>
+
+<table class="search-table-interest">
+  <tr>
+    <th>Interest Name</th>
+		<th></th>
+  </tr>
+	{% for interest in interests %}
+  <tr id="interest_{{ interest.interest }}">
+    <td>{{ interest.interest }}</td>
+		<td style="margin: auto; text-align: center; color: red;"><button onclick="deleteInterest('{{ interest.interest }}')">delete</button></td>
+  </tr>
+	{% endfor %}
+
+  </table>
+
+{% load static %}
+
+<script src="{% static 'wkit/app.js' %}"></script>
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}
+
+
+

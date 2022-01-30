@@ -1,0 +1,12 @@
+{% load static %}
+
+{% block menu %}
+	{% include "wkit/menu.html" %}
+{% endblock %}
+
+<img src="{% static 'wkit/images/Draw-a-School.jpg' %}" class="center"/>
+
+
+{% block extrahead %}
+	<link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}

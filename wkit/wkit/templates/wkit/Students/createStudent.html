@@ -1,0 +1,140 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+<script src="{% static 'wkit/create.js' %}"></script> 
+
+<h1>Create Student</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<ul class="form-style-1">
+	<li><label>Full Name <span class="required">*</span></label><input id="first" type="text" name="first_name" class="field-divided" placeholder="First" /> <input id="last" type="text" name="last_name" class="field-divided" placeholder="Last" /></li>
+
+	<li>
+		<label>Email <span class="required">*</span></label>
+		<input id="email" type="email" name="email" class="field-long" />
+	</li>
+
+	<li>
+		<label>Phone Number <span class="required">*</span></label>
+		<input id="phone_number" type="phone-number" name="phone_number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" class="field-long" placeholder="xxx-xxx-xxxx" />
+	</li>
+
+	<li>
+		<label>Address</label>
+		<input id="address" type="address" name="address" class="field-long" />
+	</li>
+
+	<li>
+		<label>Apartment, suite, etc.</label>
+		<input id="apartment" type="apartment" name="apartment" class="field-long" />
+	</li>
+
+	<li>
+		<label>City</label>
+		<select name="city" class="field-select">
+			{% for key, city in cities.items  %}
+				<option value="{{ city }}">{{ city }}</option>
+			{% endfor %}
+		</select>
+	</li>
+
+	<li>
+		<label>ZIP/postal code</label>
+		<input id="zip" type="zip" name="zip" class="field-long" />
+	</li>	
+
+	<li>
+		<label>School</label>
+		<select name="school" class="field-select">
+			{% for key, school in schools.items %}
+				<option value="{{ key }}">{{ school }}</option>
+			{% endfor %}
+		</select>
+	</li>
+
+	<li>
+		<label>Grade</label>
+		<select name="grade" class="field-select">
+		<option value="11">11th grade</option>
+		<option value="12">12th grade</option>
+		</select>
+	</li>
+	
+	<li>
+		<label>Field(s) of Interest</label>
+		<div id="add-another-interest">
+			<select name="interest" class="field-select" id="field-of-interest-1">
+				{% for interest in interests  %}
+					<option value="{{ interest.interest }}">{{ interest.interest}}</option>
+				{% endfor %}
+			</select>
+		</div>
+
+		<button id="remove-interest-button" type="button" onClick="removeField()">-</button>
+		<button type="button" onClick="addAnotherField()">+</button>
+	</li>
+
+	<li>
+		<label>Assessment Result</label>
+		<select name="assessment" class="field-select">
+			{% for key, assessment in assessments.items %}
+				<option value="{{ key }}">{{ assessment }}</option>
+			{% endfor %}
+		</select>
+	</li>
+	
+	<li>
+		<label>Preferred Method of Contact</label>
+		<select name="preferred_method" class="field-select">
+		<option value="email">Email</option>
+		<option value="call">Call</option>
+		<option value="text">Text</option>
+		</select>
+	</li>
+
+	<li>
+		<label>Gender</label>
+		<input type="radio" value="Cisgender Women" name="gender" checked> Cisgender Women<br>
+		<input type="radio" value="Cisgender Male" name="gender"> Cisgender Male<br>
+		<input type="radio" value="Genderqueer, gender non-binary, or gender fluid" name="gender"> Genderqueer, gender non-binary, or gender fluid<br>
+		<input type="radio" value="Transgender Female" name="gender"> Transgender Female</br>
+		<input type="radio" value="Transgender Male" name="gender"> Transgender Male<br>
+		<input type="radio" value="other" name="gender"> Other</br>
+	</li>
+
+	<li>
+		<label>Ethnicity</label>
+		<input type="radio" value="white" name="ethnicity" checked> White<br>
+		<input type="radio" value="american_indian_or_alaska_native" name="ethnicity"> American Indian or Alaska Native<br>
+		<input type="radio" value="asian" name="ethnicity"> Asian<br>
+		<input type="radio" value="black_or_african_american" name="ethnicity"> Black or African American</br>
+		<input type="radio" value="hispanic_or_latino" name="ethnicity"> Hispanic or Latino<br>
+		<input type="radio" value="native_hawaiian" name="ethnicity"> Native Hawaiian or Other Pacific Islander<br>
+	</li>
+
+	<li>
+		<label>Notes</label>
+		<textarea name="notes" id="notes" class="field-long field-textarea"></textarea>
+	</li>
+
+	<li>
+		<input type="submit" value="Submit" />
+	</li>
+</ul>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+

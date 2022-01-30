@@ -1,0 +1,43 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+<h1>Create Scholarship</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<ul class="form-style-1">
+	<li>
+		<label>Scholarship Name<span class="required">*</span></label>
+		<input id="scholarship_name" name="name" type="interest-name" class="field-long" />
+	</li>
+
+	<li>
+		<label>Amount in dollars (integer)</label>
+		<input id="amount" name="amount" type="interest-name" pattern="[0-9]+" class="field-long" placeholder="00000"  />
+	</li>
+
+	<li>
+		<label>Scholarship Type</label>
+		<input type="radio" value="Internal" name="type" checked> Internal<br>
+		<input type="radio" value="External" name="type"> External<br>
+	</li>
+
+	<li>
+		<label>Notes</label>
+		<textarea name="notes" id="notes" class="field-long field-textarea"></textarea>
+	</li>
+
+	<li>
+		<input type="submit" value="Submit" />
+	</li>
+	
+</ul>
+</form>
+
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}

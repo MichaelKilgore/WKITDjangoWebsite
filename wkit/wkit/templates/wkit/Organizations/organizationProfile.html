@@ -1,0 +1,90 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+<h1>{{ organization.name }}</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<table class="profile">
+  <tr height=50>
+    <th>Type</th>
+    <th>Value</th> 
+  </tr>
+  <tr height=50>
+		<td>ID</td>
+		<td>{{ organization.id }}</td>
+  </tr>
+  <tr height=50>
+    <td>Name</td>
+    <td><input class="enableEdit" id="name" name="name" value="{{ organization.name }}" readonly></td> 
+  </tr>
+	<tr height=100>
+    <td>Type</td>
+    <td>
+			<input class="nonEditMode" id="type" value="{{ organization.type }}" readonly>
+
+			<div id="changeType" style=" font: 13px 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;" hidden>
+				<input style="width: 1% !important" type="radio" type="school" id="school" name="type" value="School"> School<br>
+				<input style="width: 1% !important" type="radio" type="business" id="business" name="type" value="School"> Business<br>
+			</div>
+		</td> 
+  </tr>
+	<tr height=50>
+    <td>Address</td>
+    <td><input class="enableEdit" id="address" name="address" value="{{ organization.address }}" readonly></td> 
+  </tr>
+	<tr height=50>
+    <td>City</td>
+    <td>
+			<input class="nonEditMode" id="city" value="{{ organization.city }}" readonly>
+
+			<select name="city" id="changeCity" class="field-select" hidden>
+				{% for key, city in cities.items  %}
+					<option value="{{ city }}">{{ city }}</option>
+				{% endfor %}
+			</select>
+		</td> 
+  </tr>
+	<tr height=50>
+    <td>Zip/postal code</td>
+    <td><input class="enableEdit" id="zip" name="zip" value="{{ organization.zip }}" readonly></td> 
+  </tr>
+	<tr>
+    <td>Notes</td>
+    <td><input class="enableEdit" id="notes" name="notes" value="{{ organization.notes }}" readonly></td> 
+  </tr>
+
+</table>
+
+<div id="editContent">
+<button type="button" onClick="enableEditOrganization()">Edit</button><br>
+</div>
+
+<input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden><br>
+
+
+<button>Remove Organization</button>
+
+</form>
+
+{% load static %}
+
+<script src="{% static 'wkit/app.js' %}"></script>
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

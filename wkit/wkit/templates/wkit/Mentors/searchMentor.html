@@ -1,0 +1,43 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+
+<h1>Search Mentors</h1>
+
+<form style="background-color:#E6E6FA; padding: 10px;" method="post">
+{% csrf_token %}
+
+	<label for="search-type">Search by: </label>
+	<select id="search_type" name="search_type">
+		<option value="email">Email</option>	
+		<option value="phone_number">Phone Number</option>
+		<option value="full_scan">Full Scan</option>
+	</select>
+
+	<input id="search_entry" type="text" name="search_entry" value="">
+	<input type="submit" value="Search" />
+	<br>
+</form>
+
+<table class="search-table">
+  <tr>
+    <th>Name</th>
+    <th>Phone Number</th> 
+    <th>Email</th>
+  </tr>
+	{% for mentor in mentors %}
+	<tr>
+		<td><a style="text-decoration:none" href="{% url 'mentor/profile' id=mentor.id %}">{{ mentor.first_name }} {{ mentor.last_name }}</a></td>
+		<td><a style="text-decoration:none" href="{% url 'mentor/profile' id=mentor.id %}">{{ mentor.phone_number }}</a></td>
+		<td><a style="text-decoration:none" href="{% url 'mentor/profile' id=mentor.id %}">{{ mentor.email }}</a></td>
+	</tr>
+	{% endfor %}
+</table>
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}
+
+

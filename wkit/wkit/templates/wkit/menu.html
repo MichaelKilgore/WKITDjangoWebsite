@@ -1,0 +1,71 @@
+{% load static %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+
+<h1>Washington Kids In Transition</h1>
+
+<!-- The navigation menu -->
+<div class="navbar">
+  <a href="{% url 'home' %}">Home</a>
+  <div class="dropdown">
+    <button class="dropbtn">Students <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'student/create' %}">Create</a>
+      <a href="{% url 'student/search' %}">Search</a>
+    </div>
+  </div> 
+  <div class="dropdown">
+    <button class="dropbtn">Mentors <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'mentor/create' %}">Create</a>
+      <a href="{% url 'mentor/search' %}">Search</a>
+    </div>
+  </div> 
+  <div class="dropdown">
+    <button class="dropbtn">Programs <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'program/create' %}">Create</a>
+      <a href="{% url 'program/search' %}">Search</a>
+    </div>
+  </div>
+
+	<div class="dropdown">
+    <button class="dropbtn">Organizations <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'organization/create' %}">Create</a>
+      <a href="{% url 'organization/search' %}">Search</a>
+    </div>
+  </div>
+
+	<div class="dropdown">
+    <button class="dropbtn">Interests <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'interest/create' %}">Create</a>
+      <a href="{% url 'interest/search' %}">Search</a>
+    </div>
+  </div>
+
+	<div class="dropdown">
+    <button class="dropbtn">Scholarships <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'scholarship/create' %}">Create</a>
+      <a href="{% url 'scholarship/search' %}">Search</a>
+    </div>
+  </div>
+
+	<div class="dropdown">
+    <button class="dropbtn">Graphs <i class="fa fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="{% url 'graph/view' %}">View</a>
+      <a href="{% url 'graph/download' %}">CSV download</a>
+    </div>
+  </div>
+
+  <a style="float:right" href="{% url 'logout' %}">Logout</a>
+</div>
+
+
+
+
+

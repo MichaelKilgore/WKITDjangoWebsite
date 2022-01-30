@@ -1,0 +1,91 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+<script src="{% static 'wkit/create.js' %}"></script> 
+
+<h1>Create Program</h1>
+<form method="post">
+{% csrf_token %}
+
+<ul class="form-style-1">
+	<li>
+		<label>Program Name <span class="required">*</span></label>
+		<input id="name" type="program-name" name="name" class="field-long" required/>
+	</li>
+
+	<li>
+		<label>Company/School Organization</label>
+		<select id="organization" name="organizationID" class="field-select">
+			{% for organization in organizations %}
+				<option value="{{ organization.id }}">{{ organization.name }}</option>
+			{% endfor %}
+		</select>
+	</li>
+
+	<li>
+		<label>Phone Number</label>
+		<input type="phone-number" name="phone_number" class="field-long" placeholder="xxx-xxx-xxxx" />
+	</li>
+
+	<li>
+		<label>Email</label>
+		<input type="email" name="email" class="field-long" />
+	</li>	
+
+	<li>
+		<label>Field of Interest</label>
+		<div id="add-another-interest">
+			<select name="interest" class="field-select" id="field-of-interest-1">
+				{% for interest in interests  %}
+					<option value="{{ interest.interest }}">{{ interest.interest}}</option>
+				{% endfor %}
+			</select>
+		</div>
+	</li>
+	
+	<li>
+		<label>Time Commitment</label>
+		<select name="time_commitment" class="field-select">
+		<option value="greater than 40 hrs/week">greater than 40 hrs/week</option>
+		<option value="~40 hrs/week">~40 hrs/week</option>
+		<option value="~20 hrs/week">~20 hrs/week</option>
+		<option value="~30 hrs/week">~30 hrs/week</option>
+		<option value="~10 hrs/week">~10 hrs/week</option>
+		<option value="~5 hrs/week">~5 hrs/week</option>
+		<option value="lesws than 5 hrs/week">less than 5 hrs/week<option>
+		</select>
+	</li>
+
+	<li>
+		<label>Program Duration in Weeks</label>
+		<input type="program-duration" name="program_duration" class="field-long" />
+	</li>
+
+	<li>
+		<label>Application Deadlines</label>
+		<textarea id="field5" name="application_deadlines" class="field-long field-textarea" style="height: 50px;"></textarea>
+	</li>
+
+	<li>
+		<label>Start Dates</label>
+		<textarea id="field5" name="start_dates" class="field-long field-textarea" style="height: 50px;"></textarea>
+	</li>
+
+	<li>
+		<label>Notes</label>
+		<textarea name="notes" id="field5" class="field-long field-textarea"></textarea>
+	</li>
+
+	<li>
+		<input type="submit" value="Submit" />
+	</li>
+</ul>
+</form>
+
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}

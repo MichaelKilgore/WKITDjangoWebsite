@@ -1,0 +1,78 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+<h1>{{ program.name }}</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<table class="profile">
+  <tr height=50>
+    <th>Type</th>
+    <th>Value</th> 
+  </tr>
+  <tr height=50>
+    <td>Program Name</td>
+    <td><input class="enableEdit" id="name" name="name" value="{{ program.name }}" readonly></td> 
+  </tr>
+  <tr height=50>
+    <td>Organization</td>
+    <td>
+			<input class="nonEditMode" id="organization_name" name="organization_name" value="{{ organization.name }}" readonly>
+
+			<select id="newOrganization" name="organizationID" class="field-select" hidden>
+				{% for org in organizations %}
+					<option value="{{ org.id }}">{{ org.name }}</option>
+				{% endfor %}
+			</select>
+		</td> 
+  </tr>
+	<tr height=50>
+    <td>Phone Number</td>
+    <td><input class="enableEdit" id="phone_number" name="phone_number" value="{{ program.phone_number }}" readonly></td> 
+  </tr>
+	<tr height=50>
+    <td>Email</td>
+    <td><input class="enableEdit" id="email" name="email" value="{{ program.email }}" readonly></td> 
+  </tr>
+	<tr height=50>
+    <td>Time Commitment</td>
+    <td><input class="enableEdit" id="time_commitment" name="time_commitment" value="{{ program.time_commitment }}" readonly></td> 
+  </tr>
+	<tr height=50>
+    <td>Field-Of-Interest</td>
+    <td>
+			<input class="nonEditMode" id="interest" name="interest" value="{{ program.interest }}" readonly>
+
+			<select name="interest" class="field-select" id="newInterest" hidden>
+				{% for interest in interests %}
+					<option value="{{ interest.interest }}">{{ interest.interest }}</option>
+				{% endfor %}
+			</select>
+		</td> 
+  </tr>
+	<tr height=50>
+    <td>Notes</td>
+    <td><input class="enableEdit" id="notes" name="notes" value="{{ program.notes }}" readonly></td> 
+  </tr>
+
+</table>
+
+<div id="editContent">
+<button type="button" onClick="enableEditProgram()">Edit</button><br>
+</div>
+
+<input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden>
+<br>
+
+<button>Remove Program</button>
+
+</form>
+
+{% load static %}
+
+<script src="{% static 'wkit/app.js' %}"></script>
+
+
+
