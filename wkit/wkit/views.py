@@ -39,24 +39,18 @@ def createStudent(request):
 def searchStudent(request, key=None):
   if request.method == 'GET':
     #allStudents, allStudents['students'] = {}, tables.getAllStudents()
-    return render(request, 'wkit/Students/searchStudent.html', {})
+    allStudents, allStudents['students'] = {}, tables.queryStudents(2, None).getPage(0)
+    return render(request, 'wkit/Students/searchStudent.html', allStudents)
   else:
-    if request.POST['search_entry'] != "":
-      if request.POST['search_type'] == 'email':
-        allStudents, allStudents['students'] = {}, tables.queryStudents(0, request.POST['search_entry'])
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
-      elif request.POST['search_type'] == 'phone_number':
-        allStudents, allStudents['students'] = {}, tables.queryStudents(1, request.POST['search_entry'])
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
-      else:
-        allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
+    if request.POST['search_type'] == 'email':
+      allStudents, allStudents['students'] = {}, tables.queryStudents(0, request.POST['search_entry']).getPage(0)
+      return render(request, 'wkit/Students/searchStudent.html', allStudents)
+    elif request.POST['search_type'] == 'phone_number':
+      allStudents, allStudents['students'] = {}, tables.queryStudents(1, request.POST['search_entry']).getPage(0)
+      return render(request, 'wkit/Students/searchStudent.html', allStudents)
     else:
-      if request.POST['search_type'] != 'full_scan':
-        return render(request, 'wkit/Students/searchStudent.html', {})
-      else:
-        allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
+      allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry']).getPage(0)
+      return render(request, 'wkit/Students/searchStudent.html', allStudents.getPage(1))
 
 
 @login_required(login_url = '/admin/')
