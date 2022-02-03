@@ -5,6 +5,59 @@ from boto3.dynamodb.conditions import Attr
 from datetime import date
 from wkit.var import cities, schools, assessments, school_districts
 
+
+class Paginator:
+  def __init__(self, table, page_size, kwargs={}):
+    self.table = table
+    self.page_size = page_size
+    self.kwargs = kwargs
+    self.pages = []
+
+  def getPage(self, page_num):
+    if page_num >= len(self.pages):
+      self.advanceToPage(page_num)
+
+    return self.pages[page_num]['Items'] if self.existsPage(page_num) else None
+
+  def existsPage(self, page_num):
+    self.advanceToPage(page_num)
+    return len(self.pages) >= page_num
+
+  def advanceToPage(self, page_num):
+    while (page_num >= len(self.pages)):
+      if len(self.pages) == 0:
+        self.pages.append(self.nextPage(None))
+      else:
+        token = self.pages[-1]['LastEvaluatedKey']
+        if not token:
+          return
+        self.pages.append(self.nextPage(token))
+
+  def nextPage(self, token):
+    print(f"loading page {len(self.pages)}: {token}")
+    kwargs = self.kwargs.copy()
+    kwargs['Limit'] = self.page_size
+    if token:
+      kwargs['ExclusiveStartKey'] = token
+    #  rsp = self.table.scan(**kwargs)
+    #    Limit=self.page_size,
+    #    ExclusiveStartKey=token,
+    #  )
+    #else:
+    #  rsp = self.table.scan(Limit=self.page_size)
+
+    rsp = self.table.scan(**kwargs)
+    #rsp = self.aws_pag.paginate(
+    #  TableName=self.table_name,
+    #  PaginationConfig = {
+    #    'MaxItems': self.page_size,
+    #    'PageSize': self.page_size,
+    #    # 'StartingToken': token,
+    #  },
+    #)
+    return rsp
+
+
 def getInterests():
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_interest_table')
@@ -183,22 +236,20 @@ def getAllStudents():
 def queryStudents(search_type, search_entry):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_student_table')
+  print(f"search on {search_entry}")
 
   if search_type == 0: #search by email
-    resp = table.query(
-      IndexName='email-index',
-      KeyConditionExpression=Key('email').eq(search_entry)
-    )
-    return resp['Items']
+    return Paginator(table, 10, {
+      'IndexName': 'email-index',
+      'FilterExpression': Attr('email').contains(search_entry),
+    })
   elif search_type == 1: #search by phone number
-    resp = table.query(
-      IndexName='phone_number-index',
-      KeyConditionExpression=Key('phone_number').eq(search_entry)
-    )
-    return resp['Items']
+    return Paginator(table, 10, {
+      'IndexName': 'phone_number-index',
+      'FilterExpression': Attr('phone_number').contains(search_entry),
+    })
   else: #full scan
-    resp = table.scan()
-    return resp['Items']
+    return Paginator(table, 10)
 
 async def convertStudent(id):
   #get student info
@@ -281,7 +332,6 @@ def appendScholarship(id, allScholarships):
   )
   
   return response
-
 
 
 
@@ -479,9 +529,6 @@ def getStudents(id):
     return []
    
 
-
-
-
 ######################## PROGRAM ########################
 
 def getOrganizations():
@@ -532,8 +579,6 @@ def scanPrograms():
   resp = table.scan()
 
   return resp['Items']
-
-
 
 
 #################### ORGANIZATION ###################
@@ -609,11 +654,6 @@ def updateOrganization(id, organization):
   )
 
   return response
-
-
-
-
-
 
 
 ###################### INTERESTS #############
@@ -836,5 +876,3 @@ def updateScholarship(id, scholarship):
   return response
 
 
-  
- 
