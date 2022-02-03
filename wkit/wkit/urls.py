@@ -63,6 +63,7 @@ urlpatterns = [
 	path('interest/delete/', views.deleteInterest, name='interest/delete'),
 	path('scholarship/create/', views.createScholarship, name='scholarship/create'),
 	path('scholarship/search/', views.searchScholarship, name='scholarship/search'),
+  path('scholarship/profile/<str:id>/', views.scholarshipProfile, name='scholarship/profile'),
 	path('graph/view/', views.viewGraph, name='graph/view'),
 	path('graph/download/', views.downloadGraph, name='graph/download'),
 	path('logout/', views.logout, name='logout'),

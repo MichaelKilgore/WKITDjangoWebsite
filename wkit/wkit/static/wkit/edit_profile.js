@@ -1,6 +1,10 @@
 //save old values
 var oldValues = ['', '', '', '', '', '', '', ''];
-var oldInterest = document.getElementById('add-another-interest').innerHTML;
+var oldInterestElement = document.getElementById('add-another-interest');
+var oldInterest = "";
+if (oldInterestElement) {
+  oldInterest = oldInterestElement.innerHTML;
+}
 
 
 var editMode = false;
@@ -365,6 +369,81 @@ function reloadGender(gender) {
 	}
 	gender_change.removeAttribute("hidden");	
 }
+
+function toggleIsVolunteer() {
+  if (editMode == false) {
+    var is_volunteer_change = document.getElementById('changeVolunteerStatus');
+
+    var is_volunteer = document.getElementById('is_volunteer').value;
+    var opts = is_volunteer_change.options;
+    for (var i = 0; opt = opts[i]; i++) {
+      if (opt.value == is_volunteer) {
+        opt.setAttribute('selected', 'true');
+        break;
+      }
+    }
+    is_volunteer_change.removeAttribute("hidden");
+  } else {
+     var is_volunteer_change = document.getElementById('changeVolunteerStatus');
+     is_volunteer_change.setAttribute("hidden", true);
+  }
+
+ 
+}
+
+function toggleEditPairedStudents() {
+ var elements = document.getElementsByClassName('student_table_delete_button');
+	
+	if (editMode == false) {
+		for (var i =0;i<elements.length; i++) {
+			elements[i].removeAttribute('hidden');
+		}
+	} else {
+		for (var i =0;i<elements.length; i++) {
+			elements[i].setAttribute('hidden', true);
+		}
+	}  
+}
+
+function toggleType() {
+  if (editMode == false) {
+    var type_change = document.getElementById('changeScholarshipType');
+
+    var type = document.getElementById('type').value;
+    var opts = type_change.options;
+    for (var i = 0; opt = opts[i]; i++) {
+      if (opt.value == type) {
+        opt.setAttribute('selected', 'true');
+        break;
+      }
+    }
+    type_change.removeAttribute("hidden");
+  } else {
+     var type_change = document.getElementById('changeScholarshipType');
+     type_change.setAttribute("hidden", true);
+  }
+}
+
+function toggleEditOrgType() {
+  if (editMode == false) {
+    var type_change = document.getElementById('changeType');
+    type_change.removeAttribute("hidden");
+
+    var school = document.getElementById("school");
+    var business = document.getElementById("business");
+
+    var type = document.getElementById("type");
+    if (type.value == "School") {
+      school.checked = true;
+    } else {
+      business.checked = true;
+    }
+  } else {
+    var type_change = document.getElementById('changeType');
+    type_change.setAttribute("hidden", true);
+  }
+}
+
 
 
 

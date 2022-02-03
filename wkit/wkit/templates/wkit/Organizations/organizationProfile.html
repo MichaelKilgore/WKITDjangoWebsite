@@ -2,7 +2,7 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ organization.name }}</h1>
+<h1>{{ organization.organization_name }}</h1>
 
 <form method="post">
 {% csrf_token %}
@@ -12,22 +12,22 @@
     <th>Type</th>
     <th>Value</th> 
   </tr>
-  <tr height=50>
+  <tr height=50 hidden>
 		<td>ID</td>
-		<td>{{ organization.id }}</td>
+		<td><input name="id" value="{{ organization.id }}" readonly></td>
   </tr>
   <tr height=50>
     <td>Name</td>
-    <td><input class="enableEdit" id="name" name="name" value="{{ organization.name }}" readonly></td> 
+    <td><input class="enableEdit" id="name" name="organization_name" value="{{ organization.organization_name }}" readonly></td> 
   </tr>
 	<tr height=100>
     <td>Type</td>
     <td>
-			<input class="nonEditMode" id="type" value="{{ organization.type }}" readonly>
+			<input class="nonEditMode" id="type" value="{{ organization.organization_type }}" readonly>
 
 			<div id="changeType" style=" font: 13px 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;" hidden>
-				<input style="width: 1% !important" type="radio" type="school" id="school" name="type" value="School"> School<br>
-				<input style="width: 1% !important" type="radio" type="business" id="business" name="type" value="School"> Business<br>
+				<input style="width: 1% !important" type="radio" type="school" id="school" name="organization_type" value="School"> School<br>
+				<input style="width: 1% !important" type="radio" type="business" id="business" name="organization_type" value="School"> Business<br>
 			</div>
 		</td> 
   </tr>
@@ -59,19 +59,23 @@
 </table>
 
 <div id="editContent">
-<button type="button" onClick="enableEditOrganization()">Edit</button><br>
+<button type="button" onClick="enableEdit()">Edit</button><br>
 </div>
 
 <input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden><br>
 
 
-<button>Remove Organization</button>
+
+<button type="button" style="color: red;" onClick="deleteOrganization('{{ organization.id }}')">Delete</button>
 
 </form>
 
 {% load static %}
 
-<script src="{% static 'wkit/app.js' %}"></script>
+<script src="{% static 'wkit/edit_profile.js' %}"></script>
+<script src="{% static 'wkit/organization_profile.js' %}"></script>
+<script src="{% static 'wkit/create.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">

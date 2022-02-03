@@ -5,17 +5,38 @@ from django.contrib.auth.models import User
 import wkit.tables as tables
 
 class CreateStudentTestCase(TestCase):
-	def setUp(self):
-		self.client = Client()
-		self.user = User.objects.create_user('michael', 'michael.kilgore@gmail.com', 'kilgore')
+  def setUp(self):
+    self.client = Client()
+    self.user = User.objects.create_user('michael', 'michael.kilgore@gmail.com', 'kilgore')
 
-	def test1(self):
-		pass
+  def test1(self):
+    self.client.login(username='michael', password='kilgore')
+    response = self.client.post("/student/create/", data={
+      'first_name': 'wtf',
+      'last_name': 'wtf',
+      'email': 'happy.guy@gmail.com',
+			'phone_number': '555-555-5555',
+			'address': '99th St SW',
+			'apartment': '16B',
+			'city': 'Lynnwood',
+			'zip': '99009',
+			'school': 'Lynnwood High School',
+			'grade': '11',
+			'interest': 'Computer Science',
+			'assessment': 'blacksmith',
+			'preferred_method': 'Email',
+			'gender': 'Cisgender Male',
+			'sexual_orientation': 'Asexual',
+			'ethnicity': 'Asian',
+			'notes': 'gotta blast'
+		}, follow=True)
 
-	def test2(self):
-		pass
 
-	def test_create_valid_student(self):
+  def test2(self):
+    pass
+
+  """
+  def test_create_valid_student(self):
 		#test creating student.
 		self.client.login(username='michael', password='kilgore')
 		response = self.client.post("/student/create/", data={
@@ -99,9 +120,35 @@ class CreateStudentTestCase(TestCase):
 
 		#delete person that was added.
 		tables.deleteStudent(info['id'])
+    """
 
 	
-				
+  def test_create_clones(self):
+    i=0
+    self.client.login(username='michael', password='kilgore')
+    while i != 50:
+      last_name = 'trooper '+str(i)
+      response = self.client.post("/student/create/", data={
+          'first_name': 'clone',
+          'last_name': last_name,
+          'email': 'clone.trooper@gmail.com',
+          'phone_number': '555-555-5555',
+          'address': '99th St SW',
+          'apartment': '16B',
+          'city': 'Lynnwood',
+          'zip': '99009',
+          'school': 'Lynnwood High School',
+          'grade': '11',
+          'interest': 'Computer Science',
+          'assessment': 'blacksmith',
+          'preferred_method': 'Email',
+          'gender': 'Cisgender Male',
+          'sexual_orientation': 'Asexual',
+          'ethnicity': 'Asian',
+          'notes': 'gotta blast'
+        }, follow=True)
+      i += 1
+
 	
 
 

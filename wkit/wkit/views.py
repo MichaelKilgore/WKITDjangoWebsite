@@ -81,7 +81,11 @@ def studentProfile(request, id):
       if h['student']['mentor_id'] != "":
           x = tables.getMentor(h['student']['mentor_id'])
           h['student']['mentor_name'] = x['first_name'] + " " + x['last_name']
-    h['student']['scholarships'] = tables.getScholarships(id)
+    if 'scholarships' in h['student']:
+      if len(h['student']['scholarships']) != 0:
+        h['student']['scholarships'] = tables.getScholarships(id)
+    else:
+      h['student']['scholarships'] = []
 
     #find next june 21st.
     today = datetime.date.today()
@@ -116,7 +120,8 @@ def studentProfile(request, id):
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)
       loop = asyncio.get_event_loop()
-      loop.run_until_complete(tables.updateStudent(request.POST['id'], request.POST))
+      student_info = request.POST.copy()
+      loop.run_until_complete(tables.updateStudent(request.POST['id'], student_info))
 
       loop.close()
 
@@ -193,9 +198,6 @@ def studentProfile(request, id):
 
 
 
-  
-      
-
 
 
 @login_required(login_url = '/admin/')
@@ -246,19 +248,68 @@ def mentorProfile(request, id):
     h = {}
     h, h['cities'], h['schools'], h['assessments'], h['interests'] = {}, cities, schools, assessments, tables.getInterests()
     h['mentor'] = tables.getMentor(id)
+    h['mentor']['students'] = tables.getStudents(id) 
 
     return render(request, 'wkit/Mentors/mentorProfile.html', h)
   else:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop = asyncio.get_event_loop()
-    x, x['what'] = {}, request.POST
-    print(x)
-    #loop.run_until_complete(tables.updateStudent(int(request.POST['studentID']), request.POST))
-    loop.close()
+    if 'first_name' in request.POST: #edit mode
+      loop = asyncio.new_event_loop()
+      asyncio.set_event_loop(loop)
+      loop = asyncio.get_event_loop()
+      loop.run_until_complete(tables.updateMentor(request.POST['id'], request.POST))
 
-    return redirect('/mentor/profile/'+request.POST['mentorID'])
-    return render(request, 'wkit/Mentors/mentorProfile.html', {})
+      loop.close()
+
+      z, z['mentor'] = {}, request.POST
+
+      return redirect('/mentor/profile/'+z['mentor']['id'], newProfile=z)
+    elif 'delete' in request.POST: #delete user
+      loop = asyncio.new_event_loop()
+      asyncio.set_event_loop(loop)
+      loop = asyncio.get_event_loop()
+      loop.run_until_complete(tables.deleteMentor(request.POST['id']))
+      loop.close()
+    elif 'get_students' in request.POST: #search students
+      if request.POST['search_entry'] != "":
+        if request.POST['search_type'] == 'email':
+          allStudents, allStudents['students'] = {}, tables.queryStudents(0, request.POST['search_entry'])
+          return JsonResponse(allStudents)
+        elif request.POST['search_type'] == 'phone_number':
+          allStudents, allStudents['students'] = {}, tables.queryStudents(1, request.POST['search_entry'])
+          return JsonResponse(allStudents)
+        else:
+          allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
+          return JsonResponse(allStudents)
+      else:
+        if request.POST['search_type'] != 'full_scan':
+          return JsonResponse({})
+        else:
+          allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
+          return JsonResponse(allStudents)
+    elif 'pair_student' in request.POST: #pair mentor to user
+      user = tables.getStudent(request.POST['id'])
+
+      allStudents = []
+      checker = {}
+
+      if 'students' in user:  
+        allStudents = user['students']
+
+      for key in allStudents:
+        if request.POST['student_id'] in checker:
+          break
+        checker[key] = True
+      else:
+        allStudents.append(request.POST['student_id']);
+        tables.appendStudent(request.POST['id'], allStudents)
+
+      return HttpResponse(status=204)
+
+
+
+
+
+
 
 @login_required(login_url = '/admin/')
 def createProgram(request):
@@ -380,19 +431,11 @@ def organizationProfile(request, id):
 
     return render(request, 'wkit/Organizations/organizationProfile.html', h)
   else:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop = asyncio.get_event_loop()
-    x, x['what'] = {}, request.POST
-    print(x)
-    #loop.run_until_complete(tables.updateStudent(int(request.POST['studentID']), request.POST))
-    loop.close()
+    tables.updateOrganization(request.POST['id'], request.POST)
 
-    return redirect('/mentor/profile/'+request.POST['mentorID'])
-    return render(request, 'wkit/Mentors/mentorProfile.html', {})
+    z, z['organization'] = {}, request.POST
 
-
-  return render(request, 'wkit/Organizations/organizationProfile.html', {})
+    return redirect('/organization/profile/'+z['organization']['id'], newProfile=z)
 
 @login_required(login_url = '/admin/')
 def createInterest(request):
@@ -463,6 +506,19 @@ def searchScholarship(request):
   else:
     allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships('foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
     return render(request, 'wkit/Scholarships/searchScholarship.html', allScholarships)
+
+def scholarshipProfile(request, id):
+  if request.method == 'GET':
+    h, h['scholarship'] = {}, tables.getScholarship(id)
+    return render(request, 'wkit/Scholarships/scholarshipProfile.html', h)
+  else:
+    tables.updateScholarship(request.POST['id'], request.POST)
+
+    z, z['mentor'] = {}, request.POST
+
+    return redirect('/scholarship/profile/'+z['mentor']['id'], newProfile=z)
+
+ 
 
 @login_required(login_url = '/admin/')
 def viewGraph(request):

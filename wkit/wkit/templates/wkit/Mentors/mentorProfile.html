@@ -4,7 +4,7 @@
 
 <h1>{{ mentor.first_name }} {{ mentor.last_name }}</h1>
 
-<form method="post">
+<form id="mentor_profile_edit_form" method="post">
 {% csrf_token %}
 
 <table class="profile">
@@ -12,9 +12,9 @@
     <th>Type</th>
     <th>Value</th> 
   </tr>
-	<tr height=50>
+	<tr height=50 hidden>
 		<td>ID</td>
-		<td>{{ mentor.id }}</td>
+		<td><input name="id" value="{{ mentor.id }}" readonly></td>
 	</tr>
   <tr height=50>
     <td>First Name</td>
@@ -69,6 +69,7 @@
 				</select>
 			</div>
 
+			<button id="remove-interest-button" type="button" onClick="removeField()" hidden>-</button>
 			<button id="add-another-interest-button" type="button" onClick="addAnotherField()" hidden>+</button>
 		</td> 
   </tr>
@@ -118,10 +119,10 @@
 	<tr height=160>
 		<td>Ethnicity</td>
 		<td>
-			<input class="nonEditMode" id="ethnicity" name="ethnicity" value="{{ mentor.ethnicity }}" readonly>
+			<input class="nonEditMode" id="ethnicity" value="{{ mentor.ethnicity }}" readonly>
 	
 			<div id="changeEthnicity" style=" font: 13px 'Lucida Sans Unicode', 'Lucida Grande', sans-serif;" hidden>
-				<input style="width: 1% !important" id="white" type="radio" value="white" name="ethnicity" checked> White<br>
+				<input style="width: 1% !important" id="white" type="radio" value="white" name="ethnicity"> White<br>
 				<input style="width: 1% !important" id="aioan" type="radio" value="american_indian_or_alaska_native" name="ethnicity"> American Indian or Alaska Native<br>
 				<input style="width: 1% !important" id="asian" type="radio" value="asian" name="ethnicity"> Asian<br>
 				<input style="width: 1% !important" id="black" type="radio" value="black_or_african_american" name="ethnicity"> Black or African American</br>
@@ -134,24 +135,78 @@
     <td>Notes</td>
     <td><input class="enableEdit" id="notes" name="notes" value="{{ mentor.notes }}" readonly></td> 
   </tr>
+
 	<tr height=50>
 		<td>Paired Students</td>	
-		<td><input id="paired_mentor" name="paired_mentor" value="{{ mentor.student }}" readonly></td>
+		<td>
+      <table id="students_table">
+				{% for student in mentor.students %}
+          <tr class="student_table_row" id="row_{{ student.id }}">
+            <td>
+              <input name="students" value="{{ student.first_name }} {{ student.last_name }}" readonly>
+            </td>
+            <td class="student_table_delete_button" hidden>
+              <button style="color: red" type="button" onClick="removeStudent('{{ student.id }}', '{{ mentor.id }}')">delete</button>
+            </td>
+          </tr>
+				{% endfor %}
+			</table>
+    </td>
 	</tr>
 
 </table>
 
 <div id="editContent">
-<button type="button" onClick="enableEditMentor()">Edit</button><br>
+<button type="button" onClick="enableEdit()">Edit</button><br>
 </div>
 
 <input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden>
 
 </form>
 
+
+
+
+
+<h1>Pair with Student</h1>
+<div style="background-color:#E6E6FA; padding: 10px;">
+  <label for="search-type">Search by: </label>
+    <select id="student_pair_search_type" name="search_type">
+      <option value="email">Email</option>
+      <option value="phone_number">Phone Number</option>
+      <option value="full_scan">Full Scan</option>	
+    </select>
+
+    <input id="student_pair_search_entry" type="text" name="search_entry" value="">
+    <input type="submit" value="Search" onClick="getStudents('{{ mentor.id }}')" />
+    <br>
+</div>
+<br>
+
+<table id="student-search-table" class="search-table">
+  <tr>
+    <th>Name</th>
+    <th>Phone Number</th> 
+    <th>Email</th>
+    <th></th>
+  </tr>
+</table>
+
+<br><br>
+<button type="button" style="color: red;" onClick="deleteStudent('{{ student.id }}')">Delete</button>
+<br><br>
+
+
+
+
+
 {% load static %}
 
-<script src="{% static 'wkit/app.js' %}"></script>
+
+<script src="{% static 'wkit/edit_profile.js' %}"></script>
+<script src="{% static 'wkit/mentor_profile.js' %}"></script>
+<script src="{% static 'wkit/create.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
