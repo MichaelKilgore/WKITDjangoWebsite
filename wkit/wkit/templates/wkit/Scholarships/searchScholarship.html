@@ -48,13 +48,11 @@
   <tr>
     <th>Scholarship Name</th>
 		<th>Amount</th>
-		<th></th>
   </tr>
 	{% for scholarship in scholarships %}
   <tr id="{{ scholarship.id }}">
-    <td>{{ scholarship.name  }}</td>
-		<td>{{ scholarship.amount }}</td>
-		<td style="margin: auto; text-align: center; color: red;"><button onclick="deleteScholarship('{{ scholarship.id }}')">delete</button></td>
+    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">${{ scholarship.amount }}</a></td>
   </tr>
 	{% endfor %}
 
