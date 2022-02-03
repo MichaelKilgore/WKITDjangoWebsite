@@ -1,0 +1,77 @@
+{% block menu %}
+  {% include "wkit/menu.html" %}
+{% endblock %}
+
+{% load static %}
+
+<h1>{{ scholarship.scholarship_name }}</h1>
+
+<form id="student_profile_edit_form" method="post">
+{% csrf_token %}
+
+<table class="profile">
+  <tr height=50>
+    <th>Type</th>
+    <th>Value</th> 
+  </tr>
+  <tr height=50 hidden>
+		<td>ID</td>
+		<td><input name="id" value="{{ scholarship.id }}" readonly></td>
+	</tr>
+  <tr height=50>
+    <td>Name</td>
+    <td><input class="enableEdit" id="name" name="scholarship_name" value="{{ scholarship.scholarship_name }}" readonly></td> 
+  </tr>
+  <tr height=50>
+    <td>Amount</td>
+    <td><input class="enableEdit" id="amount" name="amount" value="{{ scholarship.amount }}" readonly></td> 
+  </tr>
+  <tr height=50>
+    <td>Type</td> 
+    <td>
+			<input class="nonEditMode" id="type" type="type" value="{{ scholarship.scholarship_type }}" readonly>
+		
+			<select id="changeScholarshipType" name="scholarship_type" class="field-select" hidden>
+				<option value="Internal" name="scholarship_type"> Internal</option>
+				<option value="External" name="scholarship_type"> External</option>
+			</select>
+		</td> 
+  </tr>
+  <tr height=50>
+    <td>Notes</td>
+    <td><input class="enableEdit" id="notes" name="notes" value="{{ scholarship.notes }}" readonly></td> 
+  </tr>
+
+
+</table>
+
+<br>
+<div id="editContent">
+<button type="button" onClick="enableEdit()">Edit</button><br>
+</div>
+
+<input id="saveButton" type="submit" value="save" hidden>
+
+</form>
+
+
+<br><br>
+<button type="button" style="color: red;" onClick="deleteScholarship('{{ scholarship.id }}')">Delete</button>
+<br><br>
+
+
+
+{% load static %}
+
+
+<script src="{% static 'wkit/edit_profile.js' %}"></script>
+<script src="{% static 'wkit/scholarship_profile.js' %}"></script>
+<script src="{% static 'wkit/create.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
+
+{% block extrahead %}
+  <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
+{% endblock %}
+
+
+
