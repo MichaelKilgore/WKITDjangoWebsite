@@ -38,19 +38,24 @@ def createStudent(request):
 @login_required(login_url = '/admin/')
 def searchStudent(request, key=None):
   if request.method == 'GET':
-    #allStudents, allStudents['students'] = {}, tables.getAllStudents()
-    allStudents, allStudents['students'] = {}, tables.queryStudents(2, None).getPage(0)
+    paginator = tables.queryStudents(2, None)
+    allStudents, allStudents['students'] = {}, paginator.getPage(0)
     return render(request, 'wkit/Students/searchStudent.html', allStudents)
   else:
     if request.POST['search_type'] == 'email':
-      allStudents, allStudents['students'] = {}, tables.queryStudents(0, request.POST['search_entry']).getPage(0)
+      paginator = tables.queryStudents(0, request.POST['search_entry'])
+      allStudents, allStudents['students'] = {}, paginator.getPage(0)
       return render(request, 'wkit/Students/searchStudent.html', allStudents)
     elif request.POST['search_type'] == 'phone_number':
-      allStudents, allStudents['students'] = {}, tables.queryStudents(1, request.POST['search_entry']).getPage(0)
+      paginator = tables.queryStudents(1, request.POST['search_entry'])
+      allStudents, allStudents['students'] = {}, paginator.getPage(0)
       return render(request, 'wkit/Students/searchStudent.html', allStudents)
     else:
-      allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry']).getPage(0)
-      return render(request, 'wkit/Students/searchStudent.html', allStudents.getPage(1))
+      paginator = tables.queryStudents(2, request.POST['search_entry'])
+      allStudents, allStudents['students'] = {}, paginator.getPage(0)
+      return render(request, 'wkit/Students/searchStudent.html', allStudents)
+
+  request.session['paginator'] = paginator
 
 
 @login_required(login_url = '/admin/')
@@ -141,21 +146,26 @@ def studentProfile(request, id):
     elif 'get_mentors' in request.POST: #search for mentors
       if request.POST['search_entry'] != "":
         if request.POST['search_type'] == 'email':
-          allMentors, allMentors['mentors'] = {}, tables.queryMentors(0, request.POST['search_entry'])
+          paginator = tables.queryMentors(0, request.POST['search_entry'])
+          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
           return JsonResponse(allMentors)
         elif request.POST['search_type'] == 'phone_number':
-          allMentors, allMentors['mentors'] = {}, tables.queryMentors(1, request.POST['search_entry'])
+          paginator = tables.queryMentors(1, request.POST['search_entry'])
+          allMentors, allMentors['mentors'] = {}, paginat.getPage(0)
           return JsonResponse(allMentors)
         else:
-          allMentors, allMentors['mentors'] = {}, tables.queryMentors(2, request.POST['search_entry'])
+          paginator = tables.queryMentors(2, request.POST['search_entry'])
+          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
           return JsonResponse(allMentors)
       else:
         if request.POST['search_type'] != 'full_scan':
           allMentors, allMentors['mentors'] = {}, []
           return JsonResponse(allMentors)
         else:
-          allMentors, allMentors['mentors'] = {}, tables.queryMentors(2, request.POST['search_entry'])
+          paginator = tables.queryMentors(2, request.POST['search_entry'])
+          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
           return JsonResponse(allMentors)
+      request.session['paginator'] = paginator
     elif 'pair_mentor' in request.POST: #pair mentor to user
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)
@@ -221,19 +231,23 @@ def searchMentor(request, key=None):
   else:
     if request.POST['search_entry'] != "":
       if request.POST['search_type'] == 'email':
-        allMentors, allMentors['mentors'] = {}, tables.queryMentors(0, request.POST['search_entry'])
+        paginator = tables.queryMentors(0, request.POST['search_entry'])
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
       elif request.POST['search_type'] == 'phone_number':
-        allMentors, allMentors['mentors'] = {}, tables.queryMentors(1, request.POST['search_entry'])
+        paginator = tables.queryMentors(1, request.POST['search_entry'])
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
       else:
-        allMentors, allMentors['mentors'] = {}, tables.queryMentors(2, request.POST['search_entry'])
+        paginator = tables.queryMentors(2, request.POST['search_entry'])
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
     else:
       if request.POST['search_type'] != 'full_scan':
         return render(request, 'wkit/Mentors/searchMentor.html', {})
       else:
-        allMentors, allMentors['mentors'] = {}, tables.queryMentors(2, request.POST['search_entry'])
+        paginator = tables.queryMentors(2, request.POST['search_entry'])
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
 
 @login_required(login_url = '/admin/')
@@ -266,20 +280,25 @@ def mentorProfile(request, id):
     elif 'get_students' in request.POST: #search students
       if request.POST['search_entry'] != "":
         if request.POST['search_type'] == 'email':
-          allStudents, allStudents['students'] = {}, tables.queryStudents(0, request.POST['search_entry'])
+          paginator = tables.queryStudents(0, request.POST['search_entry'])
+          allStudents, allStudents['students'] = {}, paginator.getPage(0)
           return JsonResponse(allStudents)
         elif request.POST['search_type'] == 'phone_number':
-          allStudents, allStudents['students'] = {}, tables.queryStudents(1, request.POST['search_entry'])
+          paginator = tables.queryStudents(1, request.POST['search_entry'])
+          allStudents, allStudents['students'] = {}, paginator.getPage(0)
           return JsonResponse(allStudents)
         else:
-          allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
+          paginator = tables.queryStudents(2, request.POST['search_entry'])
+          allStudents, allStudents['students'] = {}, paginator.getPage(0)
           return JsonResponse(allStudents)
       else:
         if request.POST['search_type'] != 'full_scan':
           return JsonResponse({})
         else:
-          allStudents, allStudents['students'] = {}, tables.queryStudents(2, request.POST['search_entry'])
+          paginator = tables.queryStudents(2, request.POST['search_entry'])
+          allStudents, allStudents['students'] = {}, paginator.getPage(0)
           return JsonResponse(allStudents)
+      request.session['paginator'] = paginator
     elif 'pair_student' in request.POST: #pair mentor to user
       user = tables.getStudent(request.POST['id'])
 

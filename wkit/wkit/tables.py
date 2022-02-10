@@ -389,22 +389,20 @@ def getMentor(id):
 def queryMentors(search_type, search_entry):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_mentor_table')
+  print(f"search mentors on {search_entry}")
 
   if search_type == 0: #search by email
-    resp = table.query(
-      IndexName='email-index',
-      KeyConditionExpression=Key('email').eq(search_entry)
-    )
-    return resp['Items']
+    return Paginator(table, 10, {
+      'IndexName': 'email-index',
+      'FilterExpression': Attr('email').contains(search_entry),
+    })
   elif search_type == 1: #search by phone number
-    resp = table.query(
-      IndexName='phone_number-index',
-      KeyConditionExpression=Key('phone_number').eq(search_entry)
-    )
-    return resp['Items']
+    return Paginator(table, 10, {
+      'IndexName': 'phone_number-index',
+      'FilterExpression': Attr('phone_number').contains(search_entry),
+    })
   else: #full scan
-    resp = table.scan()
-    return resp['Items']
+    return Paginator(table, 10)
 
 def deleteMentor(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
