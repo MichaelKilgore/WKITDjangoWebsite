@@ -11,11 +11,13 @@ from django.http import JsonResponse
 from wkit.var import cities, schools, assessments, school_districts
 import wkit.tables as tables
 
-@login_required(login_url = '/admin/')
+login_url = '/account/login/'
+
+@login_required(login_url = login_url)
 def index(request):
   return render(request, 'wkit/index.html', {})
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createStudent(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -35,7 +37,7 @@ def createStudent(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchStudent(request, key=None):
   if request.method == 'GET':
     paginator = tables.queryStudents(2, None)
@@ -58,7 +60,7 @@ def searchStudent(request, key=None):
   request.session['paginator'] = paginator
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def updateStudent(request):
   if request.method == 'POST':
     
@@ -70,7 +72,7 @@ def updateStudent(request):
 
     return redirect('/student/profile/'+request.POST['studentID'])
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def studentProfile(request, id):
   if request.method == 'GET':
     h = {}
@@ -204,7 +206,7 @@ def studentProfile(request, id):
 
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createMentor(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -224,7 +226,7 @@ def createMentor(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchMentor(request, key=None):
   if request.method == 'GET':
     return render(request, 'wkit/Mentors/searchMentor.html', {})
@@ -250,7 +252,7 @@ def searchMentor(request, key=None):
         allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def mentorProfile(request, id):
   if request.method == 'GET':
     h = {}
@@ -324,7 +326,7 @@ def mentorProfile(request, id):
 
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createProgram(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -344,7 +346,7 @@ def createProgram(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchProgram(request):
   if request.method == 'GET':
     h, h['cities'], h['interests'] = {}, cities, tables.getInterests()
@@ -373,7 +375,7 @@ def searchProgram(request):
         return render(request, 'wkit/Programs/searchProgram.html', allPrograms)
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def programProfile(request, id):
   if request.method == 'GET':
     h = {}
@@ -396,7 +398,7 @@ def programProfile(request, id):
 
   return render(request, 'wkit/Programs/programProfile.html', {})
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createOrganization(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -416,7 +418,7 @@ def createOrganization(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchOrganization(request):
   if request.method == 'GET':
     return render(request, 'wkit/Organizations/searchOrganization.html', {})
@@ -435,7 +437,7 @@ def searchOrganization(request):
         allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(2, request.POST['search_entry'])
         return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def organizationProfile(request, id):
   if request.method == 'GET':
     h = {}
@@ -450,7 +452,7 @@ def organizationProfile(request, id):
 
     return redirect('/organization/profile/'+z['organization']['id'], newProfile=z)
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createInterest(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -471,7 +473,7 @@ def createInterest(request):
 
   return render(request, 'wkit/Interests/createInterest.html', {})
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchInterest(request):
   if request.method == 'GET':
     return render(request, 'wkit/Interests/searchInterest.html', {})
@@ -488,14 +490,14 @@ def searchInterest(request):
       allInterests, allInterests['interests'] = {}, tables.queryInterests('')
       return render(request, 'wkit/Interests/searchInterest.html', allInterests)
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def deleteInterest(request):
   print('delete called');
   return redirect('/interest/search/')
 
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def createScholarship(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -512,7 +514,7 @@ def createScholarship(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def searchScholarship(request):
   if request.method == 'GET':
     return render(request, 'wkit/Scholarships/searchScholarship.html', {})
@@ -533,7 +535,7 @@ def scholarshipProfile(request, id):
 
  
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def viewGraph(request):
   if request.user.is_authenticated:
     if request.method == 'POST':
@@ -551,7 +553,7 @@ def viewGraph(request):
     return HttpResponseRedirect('/')
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def downloadGraph(request):
   if request.method == 'GET':
     return render(request, 'wkit/Graphs/downloadGraph.html', {})
@@ -575,11 +577,11 @@ def downloadGraph(request):
 
 
 def logout(request):
-  return redirect('admin/logout/')
+  return redirect('/admin/logout/')
 
 
 
-@login_required(login_url = '/admin/')
+@login_required(login_url = login_url)
 def index(request):
   return render(request, 'wkit/index.html', {})
 

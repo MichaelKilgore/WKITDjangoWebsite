@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 		'django_otp',
 		'django_otp.plugins.otp_static',
 		'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
 		'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'two_factor.middleware.threadlocals.ThreadLocals'
 ]
 
 ROOT_URLCONF = 'wkit.urls'
@@ -111,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'PST8PDT'
 
 USE_I18N = True
 
@@ -133,12 +135,16 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = '/FUCK/'
+LOGIN_URL = 'two_factor:login'
+LOGIN_REDIRECT_URL = 'two_factor:login'
 
-#LOGOUT_REDIRECT_URL = '/FUCK/'
+TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'
+TWILIO_ACCOUNT_SID = 'ACaee4fc13f6ba0a67f3b2281c79d3d593'
+TWILIO_AUTH_TOKEN = '8d62cd5902b2339768423c2903e451ec'
+TWILIO_CALLER_ID = '+14254075251'
+
+# LOGOUT_REDIRECT_URL = 'two_factor:logout'
 
 CRISPY_TEMPLATE_PACK = 'uni-form'
-
-
 
 
