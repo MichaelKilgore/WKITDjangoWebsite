@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from two_factor.urls import urlpatterns as tf_urls
+from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
 from wkit.admin import site
 
 from django_otp.admin import OTPAdminSite
@@ -24,26 +26,28 @@ from . import views
 #admin.site = site
 #admin.autodiscover()
 
-def _admin_template():
-	return 'admin/login.html'
+#def _admin_template():
+##	return 'admin/login.html'
+#
+#class OTPAdmin(OTPAdminSite):
+#
+#
+#	def __init__(self, name='otpadmin'):
+#		super().__init__(name)
+#		self.login_template = _admin_template()
+#
+#from django.contrib.auth.models import User
+#from django_otp.plugins.otp_totp.models import TOTPDevice
 
-class OTPAdmin(OTPAdminSite):
-
-
-	def __init__(self, name='otpadmin'):
-		super().__init__(name)
-		self.login_template = _admin_template()
-
-from django.contrib.auth.models import User
-from django_otp.plugins.otp_totp.models import TOTPDevice
-
-admin_site = OTPAdmin(name='OTPAdmin')
-admin_site.register(User)
-admin_site.register(TOTPDevice)
+#admin_site = OTPAdmin(name='OTPAdmin')
+#admin_site.register(User)
+#admin_site.register(TOTPDevice)
 #admin_site.autodiscover()
 
 urlpatterns = [
 	path('', views.index, name='index'),
+  path('', include(tf_urls)),
+  path('', include(tf_twilio_urls)),
 	path('home/', views.index, name='home'),
 	path('mentor/create/', views.createMentor, name='mentor/create'),
 	path('mentor/search/', views.searchMentor, name='mentor/search'),
