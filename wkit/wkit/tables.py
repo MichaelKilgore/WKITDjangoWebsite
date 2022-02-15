@@ -6,12 +6,16 @@ from datetime import date
 from wkit.var import cities, schools, assessments, school_districts
 
 
+
 class Paginator:
-  def __init__(self, table, page_size, kwargs={}):
-    self.table = table
+  def __init__(self, table_name, page_size, kwargs={}, pages={}):
+    self.table_name = table_name
     self.page_size = page_size
     self.kwargs = kwargs
-    self.pages = []
+    if pages != {}:
+      self.pages = pages
+    else:
+      self.pages = []
 
   def getPage(self, page_num):
     if page_num >= len(self.pages):
@@ -45,8 +49,10 @@ class Paginator:
     #  )
     #else:
     #  rsp = self.table.scan(Limit=self.page_size)
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table(self.table_name)
 
-    rsp = self.table.scan(**kwargs)
+    rsp = table.scan(**kwargs)
     #rsp = self.aws_pag.paginate(
     #  TableName=self.table_name,
     #  PaginationConfig = {
@@ -234,22 +240,20 @@ def getAllStudents():
   return resp['Items']
 
 def queryStudents(search_type, search_entry):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_student_table')
   print(f"search on {search_entry}")
 
   if search_type == 0: #search by email
-    return Paginator(table, 10, {
+    return Paginator('wkit_student_table', 10, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
   elif search_type == 1: #search by phone number
-    return Paginator(table, 10, {
+    return Paginator('wkit_student_table', 10, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator(table, 10)
+    return Paginator('wkit_student_table', 10)
 
 async def convertStudent(id):
   #get student info
@@ -386,23 +390,25 @@ def getMentor(id):
   else:
     return {}
 
+
+
 def queryMentors(search_type, search_entry):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_mentor_table')
   print(f"search mentors on {search_entry}")
 
   if search_type == 0: #search by email
-    return Paginator(table, 10, {
+    return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
   elif search_type == 1: #search by phone number
-    return Paginator(table, 10, {
+    return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator(table, 10)
+    return Paginator('wkit_mentor_table', 10)
 
 def deleteMentor(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -578,6 +584,34 @@ def scanPrograms():
 
   return resp['Items']
 
+# time commitments are stored in dynamodb as strings that are either:
+#   greater than 40 hrs/week
+#   ~40 hrs/week 
+#   ~20 hrs/week
+#   ~30 hrs/week
+#   ~10 hrs/week
+#   ~5 hrs/week
+#   less than 5 hrs/week
+
+#   this needs to search based off of the inputs given in queryPrograms
+def queryPrograms(search_name: str, city: [str], interest: [str], time_commitment: int):
+  """if search_type == 0: #search by email
+    return Paginator('wkit_student_table', 10, {
+      'IndexName': 'email-index',
+      'FilterExpression': Attr('email').contains(search_entry),
+    })
+  elif search_type == 1: #search by phone number
+    return Paginator('wkit_student_table', 10, {
+      'IndexName': 'phone_number-index',
+      'FilterExpression': Attr('phone_number').contains(search_entry),
+    })
+  else: #full scan
+    return Paginator('wkit_student_table', 10)"""
+
+  pass
+
+
+
 
 #################### ORGANIZATION ###################
 
@@ -652,6 +686,17 @@ def updateOrganization(id, organization):
   )
 
   return response
+
+
+def deleteOrganization(id):
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_organization_table')
+  response = table.delete_item(
+    Key={
+      'id': id
+    }
+  )
+
 
 
 ###################### INTERESTS #############
@@ -872,5 +917,49 @@ def updateScholarship(id, scholarship):
   )
 
   return response
+
+def updateCSV():
+  import csv
+
+  with open('file.csv', 'w', encoding='UTF8') as f:
+    writer = csv.writer(f)
+
+    writer.writerow(['id','first name', 'last name', 'email', 'phone number', 'address', 'apartment', 'city', 'zip', 'school', 'district', 'grade', 'field(s) of interest', 'assessment result', 'preferred method of contact', 'gender', 'ethnicity', 'notes', 'money given', 'money won', 'number of scholarships'])
+
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_student_table')
+
+    students = table.scan()['Items']
+
+    #for student in students:
+      #writer.writerow(0)
+
+
+ 
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_mentor_table')
+ 
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_program_table')
+
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_organization_table')
+
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_interest_table')
+
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+    table = dynamodb.Table('wkit_scholarship_table')
+
+    writer.writerow(row)
+  
+
+
+
+
+
+
+
+
 
 

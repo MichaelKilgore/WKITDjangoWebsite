@@ -21,7 +21,7 @@
 	<br>
 </form>
 
-<table class="search-table">
+<table id="organization-search-table" class="search-table">
   <tr>
     <th>Name</th>
     <th>City</th> 
@@ -34,7 +34,24 @@
 	{% endfor %}
 </table>
 
+{% csrf_token %}
+
+<br>
+<div style="position: absolute; right: 150;">
+  <button onClick="lastPage()")>&larr;</button>
+   <span id="page_num">0</span>
+  <button onClick="nextPage()")>&rarr;</button>
+</div>
+<br>
+<br>
+
+{% load static %}
+<script src="{% static 'wkit/organization_search.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
 {% endblock %}
+
+
+

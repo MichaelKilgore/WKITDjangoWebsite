@@ -12,6 +12,10 @@
     <th>Type</th>
     <th>Value</th> 
   </tr>
+	<tr height=50 hidden>
+		<td>ID</td>
+		<td><input name="id" value="{{ program.id }}" readonly></td>
+	</tr>
   <tr height=50>
     <td>Program Name</td>
     <td><input class="enableEdit" id="name" name="name" value="{{ program.name }}" readonly></td> 
@@ -19,7 +23,8 @@
   <tr height=50>
     <td>Organization</td>
     <td>
-			<input class="nonEditMode" id="organization_name" name="organization_name" value="{{ organization.name }}" readonly>
+      <input class="nonEditMode" id="organization_name" name="organization_name" value="{{ organization.name }}" readonly>
+      <input type="hidden" id="organization_id" value="{{ organization.id }}" hidden>
 
 			<select id="newOrganization" name="organizationID" class="field-select" hidden>
 				{% for org in organizations %}
@@ -30,7 +35,7 @@
   </tr>
 	<tr height=50>
     <td>Phone Number</td>
-    <td><input class="enableEdit" id="phone_number" name="phone_number" value="{{ program.phone_number }}" readonly></td> 
+    <td><input class="enableEdit" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ student.phone_number }}" readonly></td> 
   </tr>
 	<tr height=50>
     <td>Email</td>
@@ -38,14 +43,28 @@
   </tr>
 	<tr height=50>
     <td>Time Commitment</td>
-    <td><input class="enableEdit" id="time_commitment" name="time_commitment" value="{{ program.time_commitment }}" readonly></td> 
+    <td>
+      <input class="nonEditMode" id="time_commitment" name="time_commitment" value="{{ program.time_commitment }}" readonly>
+
+      <div id="change-time-commitment" hidden>
+        <select id="new_time_commitment" name="time_commitment" class="field-select">
+        <option value="greater than 40 hrs/week">greater than 40 hrs/week</option>
+        <option value="~40 hrs/week">~40 hrs/week</option>
+        <option value="~20 hrs/week">~20 hrs/week</option>
+        <option value="~30 hrs/week">~30 hrs/week</option>
+        <option value="~10 hrs/week">~10 hrs/week</option>
+        <option value="~5 hrs/week">~5 hrs/week</option>
+        <option value="lesws than 5 hrs/week">less than 5 hrs/week<option>
+        </select>
+      </div>
+    </td> 
   </tr>
 	<tr height=50>
     <td>Field-Of-Interest</td>
     <td>
 			<input class="nonEditMode" id="interest" name="interest" value="{{ program.interest }}" readonly>
 
-			<select name="interest" class="field-select" id="newInterest" hidden>
+			<select name="interest" class="field-select" id="add-another-interest" hidden>
 				{% for interest in interests %}
 					<option value="{{ interest.interest }}">{{ interest.interest }}</option>
 				{% endfor %}
@@ -60,19 +79,22 @@
 </table>
 
 <div id="editContent">
-<button type="button" onClick="enableEditProgram()">Edit</button><br>
+<button type="button" onClick="enableEdit()">Edit</button><br>
 </div>
 
 <input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden>
 <br>
 
-<button>Remove Program</button>
+<button style="color: red">Delete Program</button>
 
 </form>
 
 {% load static %}
 
-<script src="{% static 'wkit/app.js' %}"></script>
+<script src="{% static 'wkit/edit_profile.js' %}"></script>
+<script src="{% static 'wkit/program_profile.js' %}"></script>
+<script src="{% static 'wkit/create.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
 
 
 

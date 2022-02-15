@@ -7,6 +7,7 @@ import uuid
 import datetime
 from django.http import HttpResponse
 from django.http import JsonResponse
+import json
 
 from wkit.var import cities, schools, assessments, school_districts
 import wkit.tables as tables
@@ -42,22 +43,42 @@ def searchStudent(request, key=None):
   if request.method == 'GET':
     paginator = tables.queryStudents(2, None)
     allStudents, allStudents['students'] = {}, paginator.getPage(0)
+    request.session['paginator'] = json.dumps(vars(paginator))
     return render(request, 'wkit/Students/searchStudent.html', allStudents)
   else:
-    if request.POST['search_type'] == 'email':
-      paginator = tables.queryStudents(0, request.POST['search_entry'])
-      allStudents, allStudents['students'] = {}, paginator.getPage(0)
-      return render(request, 'wkit/Students/searchStudent.html', allStudents)
-    elif request.POST['search_type'] == 'phone_number':
-      paginator = tables.queryStudents(1, request.POST['search_entry'])
-      allStudents, allStudents['students'] = {}, paginator.getPage(0)
-      return render(request, 'wkit/Students/searchStudent.html', allStudents)
-    else:
-      paginator = tables.queryStudents(2, request.POST['search_entry'])
-      allStudents, allStudents['students'] = {}, paginator.getPage(0)
-      return render(request, 'wkit/Students/searchStudent.html', allStudents)
+    if 'search_type' in request.POST:
+      if request.POST['search_type'] == 'email':
+        paginator = tables.queryStudents(0, request.POST['search_entry'])
+        allStudents, allStudents['students'] = {}, paginator.getPage(0)
+        request.session['paginator'] = json.dumps(vars(paginator))
+        return render(request, 'wkit/Students/searchStudent.html', allStudents)
+      elif request.POST['search_type'] == 'phone_number':
+        paginator = tables.queryStudents(1, request.POST['search_entry'])
+        allStudents, allStudents['students'] = {}, paginator.getPage(0)
+        request.session['paginator'] = json.dumps(vars(paginator))
+        return render(request, 'wkit/Students/searchStudent.html', allStudents)
+      else:
+        paginator = tables.queryStudents(2, request.POST['search_entry'])
+        allStudents, allStudents['students'] = {}, paginator.getPage(0)
+        request.session['paginator'] = json.dumps(vars(paginator))
+        return render(request, 'wkit/Students/searchStudent.html', allStudents)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allStudents)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allStudents)
 
-  request.session['paginator'] = paginator
+      return JsonResponse({})
+    else:
+      return JsonResponse({})
+
+  
 
 
 @login_required(login_url = login_url)
@@ -200,9 +221,6 @@ def studentProfile(request, id):
 
       return HttpResponse(status=204)
 
-  
-
-
 
 
 
@@ -226,10 +244,15 @@ def createMentor(request):
   else:
     return HttpResponseRedirect('/')
 
+
+
 @login_required(login_url = login_url)
 def searchMentor(request, key=None):
   if request.method == 'GET':
-    return render(request, 'wkit/Mentors/searchMentor.html', {})
+    paginator = tables.queryMentors(2, None)
+    allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
+    request.session['paginator'] = json.dumps(vars(paginator))
+    return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
   else:
     if request.POST['search_entry'] != "":
       if request.POST['search_type'] == 'email':
@@ -244,13 +267,35 @@ def searchMentor(request, key=None):
         paginator = tables.queryMentors(2, request.POST['search_entry'])
         allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-    else:
+    elif 'search_type' in request.POST:
       if request.POST['search_type'] != 'full_scan':
         return render(request, 'wkit/Mentors/searchMentor.html', {})
       else:
         paginator = tables.queryMentors(2, request.POST['search_entry'])
         allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
         return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allMentors)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allMentors)
+
+      return JsonResponse({})
+    else:
+      return JsonResponse({})
+
+
+
+
+  
+
+
 
 @login_required(login_url = login_url)
 def mentorProfile(request, id):
@@ -382,21 +427,29 @@ def programProfile(request, id):
     h, h['cities'], h['interests'] = {}, cities, tables.getInterests()
     h['organizations'] = tables.getOrganizations()
     h['program'] = tables.getProgram(id)
-    h['organization'] = tables.getProgram(h['program']['organizationID'])
+    h['organization'] = tables.getOrganization(h['program']['organizationID'])
 
     return render(request, 'wkit/Programs/programProfile.html', h)
   else:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop = asyncio.get_event_loop()
-    x, x['what'] = {}, request.POST
-    print(x)
-    loop.close()
+    if 'first_name' in request.POST: #edit mode
+      loop = asyncio.new_event_loop()
+      asyncio.set_event_loop(loop)
+      loop = asyncio.get_event_loop()
+      program_info = request.POST.copy()
+      loop.run_until_complete(tables.updateProgram(request.POST['id'], program_info))
 
-    return redirect('/program/profile/'+request.POST['programID'])
-    return render(request, 'wkit/Programs/programProfile.html', {})
+      loop.close()
 
-  return render(request, 'wkit/Programs/programProfile.html', {})
+      return redirect('/student/profile/'+z['student']['id'], newProfile={})
+    else: #delete
+      loop = asyncio.new_event_loop()
+      asyncio.set_event_loop(loop)
+      loop = asyncio.get_event_loop()
+      loop.run_until_complete(tables.deleteMentor(request.POST['id']))
+      loop.close()
+
+      return HttpResponse(status=204)
+
 
 @login_required(login_url = login_url)
 def createOrganization(request):
@@ -423,19 +476,37 @@ def searchOrganization(request):
   if request.method == 'GET':
     return render(request, 'wkit/Organizations/searchOrganization.html', {})
   else:
-    if request.POST['search_entry'] != "":
-      if request.POST['search_type'] == 'Name':
-        allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(0, request.POST['search_entry'])
-        return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
+    if 'search_entry' in request.POST:
+      if request.POST['search_entry'] != "":
+        if request.POST['search_type'] == 'Name':
+          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(0, request.POST['search_entry'])
+          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
+        else:
+          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(1, request.POST['search_entry'])
+          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
       else:
-        allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(1, request.POST['search_entry'])
-        return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
+        if request.POST['search_type'] != 'full_scan':
+          return render(request, 'wkit/Organizations/searchOrganization.html', {})
+        else:
+          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(2, request.POST['search_entry'])
+          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allOrganizations, allOrganizations['organizations'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allOrganizations)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allOrganizations, allOrganizations['organizations'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allOrganizations)
+
+      return JsonResponse({})
     else:
-      if request.POST['search_type'] != 'full_scan':
-        return render(request, 'wkit/Organizations/searchOrganization.html', {})
-      else:
-        allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(2, request.POST['search_entry'])
-        return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
+      return JsonResponse({})
+
+
 
 @login_required(login_url = login_url)
 def organizationProfile(request, id):
@@ -446,11 +517,15 @@ def organizationProfile(request, id):
 
     return render(request, 'wkit/Organizations/organizationProfile.html', h)
   else:
-    tables.updateOrganization(request.POST['id'], request.POST)
+    if 'organization_name' in request.POST:
+      tables.updateOrganization(request.POST['id'], request.POST)
+      z, z['organization'] = {}, request.POST
+      return redirect('/organization/profile/'+z['organization']['id'], newProfile=z)
+    else: #delete
+      tables.deleteOrganization(request.POST['id'])
 
-    z, z['organization'] = {}, request.POST
+      return HttpResponse(status=204)
 
-    return redirect('/organization/profile/'+z['organization']['id'], newProfile=z)
 
 @login_required(login_url = login_url)
 def createInterest(request):
@@ -477,18 +552,34 @@ def createInterest(request):
 def searchInterest(request):
   if request.method == 'GET':
     return render(request, 'wkit/Interests/searchInterest.html', {})
-  else:
+  else: 
     if 'interest' in request.POST:
       print('request.POST is: ', request.POST)
       tables.deleteInterest(request.POST['interest'])
       return HttpResponse(status=204)
 
-    if request.POST['search_entry'] != "":
-      allInterests, allInterests['interests'] = {}, tables.queryInterests(request.POST['search_entry'])
-      return render(request, 'wkit/Interests/searchInterest.html', allInterests)
+    if 'search_entry' in request.POST:
+      if request.POST['search_entry'] != "":
+        allInterests, allInterests['interests'] = {}, tables.queryInterests(request.POST['search_entry'])
+        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
+      else:
+        allInterests, allInterests['interests'] = {}, tables.queryInterests('')
+        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allStudents)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allInterests)
+      return JsonResponse({})
     else:
-      allInterests, allInterests['interests'] = {}, tables.queryInterests('')
-      return render(request, 'wkit/Interests/searchInterest.html', allInterests)
+      return JsonResponse({})
+
 
 @login_required(login_url = login_url)
 def deleteInterest(request):
@@ -519,21 +610,42 @@ def searchScholarship(request):
   if request.method == 'GET':
     return render(request, 'wkit/Scholarships/searchScholarship.html', {})
   else:
-    allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships('foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
-    return render(request, 'wkit/Scholarships/searchScholarship.html', allScholarships)
+    if 'name' in request.POST:
+      allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships('foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
+      return render(request, 'wkit/Scholarships/searchScholarship.html', allScholarships)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allStudents)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allStudents)
+      return JsonResponse({})
+    else:
+      return JsonResponse({})
+
+
 
 def scholarshipProfile(request, id):
   if request.method == 'GET':
     h, h['scholarship'] = {}, tables.getScholarship(id)
     return render(request, 'wkit/Scholarships/scholarshipProfile.html', h)
   else:
-    tables.updateScholarship(request.POST['id'], request.POST)
+    if 'amount' in request.POST: #edit
+      tables.updateScholarship(request.POST['id'], request.POST)
 
-    z, z['mentor'] = {}, request.POST
+      z, z['scholarship'] = {}, request.POST
 
-    return redirect('/scholarship/profile/'+z['mentor']['id'], newProfile=z)
+      return redirect('/scholarship/profile/'+z['mentor']['id'], newProfile=z)
+    else: #delete
+      tables.deleteScholarship(request.POST['id'])
 
- 
+      return HttpResponse(status=204)
+
 
 @login_required(login_url = login_url)
 def viewGraph(request):

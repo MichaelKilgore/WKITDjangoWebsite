@@ -21,7 +21,7 @@
 	<br>
 </form>
 
-<table class="search-table">
+<table id="mentor-search-table" class="search-table">
   <tr>
     <th>Name</th>
     <th>Phone Number</th> 
@@ -35,6 +35,21 @@
 	</tr>
 	{% endfor %}
 </table>
+
+{% csrf_token %}
+
+<br>
+<div style="position: absolute; right: 150;">
+  <button onClick="lastPage()")>&larr;</button>
+  <span id="page_num">0</span>
+  <button onClick="nextPage()")>&rarr;</button>
+</div>
+
+{% load static %}
+<script src="{% static 'wkit/mentor_search.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
+
+
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">

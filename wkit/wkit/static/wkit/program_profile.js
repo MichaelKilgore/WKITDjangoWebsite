@@ -1,34 +1,43 @@
 function cancelChanges() {
+
   revertEnableEditChanges();	
+
 	toggleEditReadOnly();
+
 	changeEditButtonToCancelButton();
 
-  toggleEditOrgType();
-  toggleEditCity();
+  toggleEditOrganization();
+  toggleEditTimeCommitment();
+  toggleEditInterest();
 
   toggleSaveOption();
+
+	//reveal non edit values again.
 	toggleNonEditMode();
 
-  editMode = false;
+	editMode = false;	
 }
 
 function enableEdit() {
   setOldValues();
 
-  toggleEditReadOnly();
+	toggleEditReadOnly();
+
 	changeEditButtonToCancelButton();
 
-  //not done
-  toggleEditOrgType();
-  toggleEditCity();
+  toggleEditOrganization();
+  toggleEditTimeCommitment()
+  toggleEditInterest();
 
   toggleSaveOption();
+
+	//reveal non edit values again.
 	toggleNonEditMode();
 
-  editMode = true;
+	editMode = true;
 }
 
-function deleteOrganization(id) {
+function deleteProgram(id) {
   let isExecuted = confirm("Are you sure you would like to delete this user?");
 
 	if (isExecuted) {

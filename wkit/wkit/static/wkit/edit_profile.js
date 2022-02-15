@@ -2,6 +2,7 @@
 var oldValues = ['', '', '', '', '', '', '', ''];
 var oldInterestElement = document.getElementById('add-another-interest');
 var oldInterest = "";
+var oldOrganization = ""
 if (oldInterestElement) {
   oldInterest = oldInterestElement.innerHTML;
 }
@@ -111,14 +112,17 @@ function toggleEditInterest() {
 		if (allInterests.length == 1) {
 			var add_another_interest = document.getElementById('add-another-interest');
 
-			var remove_interest_button = document.getElementById('remove-interest-button');
-			var add_another_interest_button = document.getElementById('add-another-interest-button');
+      if (document.getElementById('remove-interest-button') != null) {
+        var remove_interest_button = document.getElementById('remove-interest-button');
+        var add_another_interest_button = document.getElementById('add-another-interest-button');
+        add_another_interest_button.removeAttribute("hidden");
+        remove_interest_button.removeAttribute("hidden");
+      }
 			
 			add_another_interest.value=document.getElementById('interest').value;
 
 			add_another_interest.removeAttribute("hidden");
-			add_another_interest_button.removeAttribute("hidden");
-			remove_interest_button.removeAttribute("hidden");
+
 		} else {
 			var add_another_interest = document.getElementById('add-another-interest');
 			var remove_interest_button = document.getElementById('remove-interest-button');
@@ -164,13 +168,17 @@ function toggleEditInterest() {
 		} //: ELSE
 	} else {
 		var interest_change = document.getElementById('add-another-interest');
-		var remove_interest_button = document.getElementById('remove-interest-button');
-		var add_another_interest_button = document.getElementById('add-another-interest-button');
+    
+    if (document.getElementById('remove-interest-button') != null) {
+      var remove_interest_button = document.getElementById('remove-interest-button');
+      var add_another_interest_button = document.getElementById('add-another-interest-button');
+      remove_interest_button.setAttribute("hidden", true);
+      add_another_interest_button.setAttribute('hidden', true);
+    }
+
 
 		interest_change.innerHTML = oldInterest;
 
-		remove_interest_button.setAttribute("hidden", true);
-		add_another_interest_button.setAttribute('hidden', true);
 		interest_change.setAttribute('hidden', true);
 	}
 }
@@ -443,6 +451,39 @@ function toggleEditOrgType() {
     type_change.setAttribute("hidden", true);
   }
 }
+
+function toggleEditOrganization() {
+	if (editMode == false) {
+		var org = document.getElementById('organization_name');
+
+    var new_org = document.getElementById('newOrganization');
+
+    new_org.value=document.getElementById('organization_id').value;
+
+    new_org.removeAttribute("hidden");
+
+	} else {
+		var org = document.getElementById('organozation_name');
+    var new_org = document.getElementById('newOrganization');
+
+		//org.innerHTML = oldOrganization;
+
+		new_org.setAttribute('hidden', true);
+	}
+}
+
+function toggleEditTimeCommitment() {
+  var time_com = document.getElementById('change-time-commitment');
+  if (editMode == false) {
+    time_com.value=document.getElementById('time_commitment').value;
+
+    time_com.removeAttribute("hidden");
+  } else {
+    time_com.setAttribute('hidden', true);
+  }
+
+}
+
 
 
 

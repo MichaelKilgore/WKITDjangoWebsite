@@ -44,7 +44,7 @@
 	<br>
 </form>
 
-<table class="search-table-interest">
+<table id="scholarship-search-table" class="search-table-interest">
   <tr>
     <th>Scholarship Name</th>
 		<th>Amount</th>
@@ -58,9 +58,18 @@
 
  </table>
 
-{% load static %}
+<br>
+<div style="position: absolute; right: 150;">
+  <button onClick="lastPage()")>&larr;</button>
+   <span id="page_num">0</span>
+  <button onClick="nextPage()")>&rarr;</button>
+</div>
+<br>
+<br>
 
-<script src="{% static 'wkit/app.js' %}"></script>
+{% load static %}
+<script src="{% static 'wkit/scholarship_search.js' %}"></script>
+<script src="{% static 'wkit/csrftoken.js' %}"></script>
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">

@@ -126,7 +126,6 @@ function deleteStudent(id) {
 
 		location.href="/";
 	}
-
 }
 
 function getMentors(id) {
@@ -323,6 +322,8 @@ function removeScholarship(scholarship_id, student_id) {
 
 }
 
+
+		
 
 
 
