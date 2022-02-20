@@ -36,16 +36,16 @@
 	{% endfor %}
 </table>
 
-{% csrf_token %}
-
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="lastPage()")>&larr;</button>
-   <span id="page_num">0</span>
-  <button onClick="nextPage()")>&rarr;</button>
+  <button id="prev_page" onClick="lastPage()" {% if pageNum < 1 %}disabled{% endif %}>&larr;</button>
+  <span id="page_num">1</span>
+  <button id="next_page" onClick="nextPage()" {% if not hasNext %} disabled{% endif %}>&rarr;</button>
 </div>
 <br>
 <br>
+
+{% csrf_token %}
 
 {% load static %}
 <script src="{% static 'wkit/student_search.js' %}"></script>

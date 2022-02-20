@@ -8,7 +8,8 @@ function nextPage() {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
     body: new URLSearchParams({
-      'next_page': num,
+      'action': 'next_page',
+      'current_page': num,
     })
   })	
   .then(response => response.json())
@@ -17,6 +18,8 @@ function nextPage() {
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;
     }
+    document.getElementById('prev_page').disabled = num < 1;
+    document.getElementById('next_page').disabled = !data.hasNext;
 
     //for (var i=0;mentor=data.mentors[i];i++) {
     table = document.getElementById('student-search-table');
@@ -44,7 +47,7 @@ function nextPage() {
 
 function lastPage() {
   var num = document.getElementById('page_num').innerHTML;
-  if (parseInt(num) > 0) {
+  if (parseInt(num) > 1) {
     fetch('', {
       method: 'POST',
       headers: {
@@ -52,16 +55,19 @@ function lastPage() {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
       },
       body: new URLSearchParams({
-        'last_page': num,
+        'action': 'prev_page',
+        'current_page': num,
       })
     })	
     .then(response => response.json())
     .then(data => {
-      
-      if (parseInt(num) > 0) { 
+
+      if (parseInt(num) > 1) { 
         num  = (parseInt(num)-1);
         document.getElementById('page_num').innerHTML = num;
       }
+      document.getElementById('prev_page').disabled = num <= 1;
+      document.getElementById('next_page').disabled = !data.hasNext;
       
       table = document.getElementById('student-search-table');
       var i=0;
@@ -84,5 +90,4 @@ function lastPage() {
 
     });
   }
-
 }

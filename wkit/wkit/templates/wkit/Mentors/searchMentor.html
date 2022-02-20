@@ -40,9 +40,9 @@
 
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="lastPage()")>&larr;</button>
+  <button id="prev_page" onClick="lastPage()" {% if pageNum < 1 %}disabled{% endif %}>&larr;</button>
   <span id="page_num">0</span>
-  <button onClick="nextPage()")>&rarr;</button>
+  <button id="next_page" onClick="nextPage()" {% if not hasNext %} disabled{% endif %}>&rarr;</button>
 </div>
 
 {% load static %}

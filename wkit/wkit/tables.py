@@ -17,51 +17,75 @@ class Paginator:
     else:
       self.pages = []
 
-  def getPage(self, page_num):
+
+  def getPage(self, page_num, items_label):
+    print(f"getPage({page_num}) - len(self.pages)={len(self.pages)}")
     if page_num >= len(self.pages):
       self.advanceToPage(page_num)
 
-    return self.pages[page_num]['Items'] if self.existsPage(page_num) else None
+    if not self.existsPage(page_num):
+      return None
+
+    page = self.pages[page_num]
+    lastEvaluatedKey = page["LastEvaluatedKey"] if "LastEvaluatedKey" in page else None
+    if "LastEvaluatedKey" in page:
+      print(f"in getPage({page_num}): LastEvaluatedKey={lastEvaluatedKey}")
+    res = {
+        "pageNum": page_num,
+        "LastEvaluatedKey": lastEvaluatedKey,
+        "hasNext": lastEvaluatedKey is not None,
+    }
+    if items_label is None:
+      items_label = "items"
+    res[items_label] = page["Items"]
+    return res
+
 
   def existsPage(self, page_num):
     self.advanceToPage(page_num)
-    return len(self.pages) >= page_num
+    return len(self.pages) > page_num
 
   def advanceToPage(self, page_num):
+    print(f"advanceToPage({page_num})")
     while (page_num >= len(self.pages)):
       if len(self.pages) == 0:
         self.pages.append(self.nextPage(None))
       else:
-        token = self.pages[-1]['LastEvaluatedKey']
+        token =  self.pages[-1]["LastEvaluatedKey"] if "LastEvaluatedKey" in self.pages[-1] else None
         if not token:
-          return
+          break
         self.pages.append(self.nextPage(token))
+    print(f"leaving advanceToPage(): len={len(self.pages)}")
 
   def nextPage(self, token):
     print(f"loading page {len(self.pages)}: {token}")
+    page = {
+        "Items": [],
+    }
+    while True:
+      batch = self.nextBatch(token)
+      page["Items"] += batch["Items"]
+      token = batch["LastEvaluatedKey"]
+      print(f"loaded: {len(batch['Items'])} token={token}")
+      if not token or len(page["Items"]) > self.page_size / 2:
+        break
+    page["LastEvaluatedKey"] = token
+    return page
+
+  def nextBatch(self, token):
+    print(f"loading batch {len(self.pages)}: {token}")
     kwargs = self.kwargs.copy()
     kwargs['Limit'] = self.page_size
     if token:
       kwargs['ExclusiveStartKey'] = token
-    #  rsp = self.table.scan(**kwargs)
-    #    Limit=self.page_size,
-    #    ExclusiveStartKey=token,
-    #  )
-    #else:
-    #  rsp = self.table.scan(Limit=self.page_size)
     dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table(self.table_name)
 
     rsp = table.scan(**kwargs)
-    #rsp = self.aws_pag.paginate(
-    #  TableName=self.table_name,
-    #  PaginationConfig = {
-    #    'MaxItems': self.page_size,
-    #    'PageSize': self.page_size,
-    #    # 'StartingToken': token,
-    #  },
-    #)
-    return rsp
+    return {
+      "Items": rsp["Items"],
+      "LastEvaluatedKey": rsp["LastEvaluatedKey"] if "LastEvaluatedKey" in rsp else None
+    }
 
 
 def getInterests():
@@ -242,14 +266,14 @@ def getAllStudents():
 def queryStudents(search_type, search_entry):
   print(f"search on {search_entry}")
 
-  if search_type == 0: #search by email
+  if search_type == 'email': #search by email
+    #  'IndexName': 'email-index',
     return Paginator('wkit_student_table', 10, {
-      'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
-  elif search_type == 1: #search by phone number
+  elif search_type == 'phone_number': #search by phone number
+    #  'IndexName': 'phone_number-index',
     return Paginator('wkit_student_table', 10, {
-      'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
@@ -646,24 +670,17 @@ def getOrganization(id):
     return {}
 
 def queryOrganizations(search_type, search_entry):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_organization_table')
+  if search_type == 'Name': #search by name
+    return Paginator('wkit_organization_table', 10, {
+      'FilterExpression': Attr('name').contains(search_entry),
+    })
 
-  if search_type == 0: #search by name
-    resp = table.query(
-      IndexName='name-index',
-      KeyConditionExpression=Key('name').eq(search_entry)
-    )
-    return resp['Items']
-  elif search_type == 1: #search by city
-    resp = table.query(
-      IndexName='city-index',
-      KeyConditionExpression=Key('city').eq(search_entry)
-    )
-    return resp['Items']
+  elif search_type == 'City': #search by city
+    return Paginator('wkit_organization_table', 10, {
+      'FilterExpression': Attr('city').contains(search_entry),
+    })
   else: #full scan
-    resp = table.scan()
-    return resp['Items']
+    return Paginator('wkit_organization_table', 10)
 
 def updateOrganization(id, organization):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
