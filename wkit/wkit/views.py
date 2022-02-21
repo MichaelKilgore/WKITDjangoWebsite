@@ -171,14 +171,17 @@ def studentProfile(request, id):
         if request.POST['search_type'] == 'email':
           paginator = tables.queryMentors(0, request.POST['search_entry'])
           allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
+          request.session['mentor_paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allMentors)
         elif request.POST['search_type'] == 'phone_number':
           paginator = tables.queryMentors(1, request.POST['search_entry'])
           allMentors, allMentors['mentors'] = {}, paginat.getPage(0)
+          request.session['mentor_paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allMentors)
         else:
           paginator = tables.queryMentors(2, request.POST['search_entry'])
           allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
+          request.session['mentor_paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allMentors)
       else:
         if request.POST['search_type'] != 'full_scan':
@@ -187,6 +190,7 @@ def studentProfile(request, id):
         else:
           paginator = tables.queryMentors(2, request.POST['search_entry'])
           allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
+          request.session['mentor_paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allMentors)
       request.session['paginator'] = paginator
     elif 'pair_mentor' in request.POST: #pair mentor to user
@@ -198,7 +202,9 @@ def studentProfile(request, id):
 
       return HttpResponse(status=204)
     elif 'get_scholarships' in request.POST: #search for scholarships
-      allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships(request.POST['id'], request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
+      paginator = tables.queryScholarships(request.POST['id'], request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
+      allScholarships, allScholarships['scholarships'] = {}, paginator.getPage(0)
+      request.session['mentor_paginator'] = json.dumps(vars(paginator))
       return JsonResponse(allScholarships)
     elif 'pair_scholarship' in request.POST: #pair scholarship to user
       #query for old list of scholarships 
@@ -220,6 +226,44 @@ def studentProfile(request, id):
         tables.appendScholarship(request.POST['id'], allScholarships)
 
       return HttpResponse(status=204)
+    elif 'mentor' in request.POST and 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['mentor_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allMentors)
+    elif 'mentor' in request.POST and 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['mentor_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allMentors)
+      return JsonResponse({})
+    elif 'program' in request.POST and 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['program_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allPrograms)
+    elif 'program' in request.POST and 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['program_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allPrograms)
+      return JsonResponse({})
+    elif 'scholarship' in request.POST and 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['scholarship_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allScholarships, allScholarships['scholarships'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allScholarships)
+    elif 'scholarship' in request.POST and 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['scholarship_paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allScholarships, allScholarships['scholarships'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allScholarships)
+      return JsonResponse({})
+    else:
+      return JsonResponse({})
 
 
 
@@ -293,10 +337,6 @@ def searchMentor(request, key=None):
 
 
 
-  
-
-
-
 @login_required(login_url = login_url)
 def mentorProfile(request, id):
   if request.method == 'GET':
@@ -329,14 +369,17 @@ def mentorProfile(request, id):
         if request.POST['search_type'] == 'email':
           paginator = tables.queryStudents(0, request.POST['search_entry'])
           allStudents, allStudents['students'] = {}, paginator.getPage(0)
+          request.session['paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allStudents)
         elif request.POST['search_type'] == 'phone_number':
           paginator = tables.queryStudents(1, request.POST['search_entry'])
           allStudents, allStudents['students'] = {}, paginator.getPage(0)
+          request.session['paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allStudents)
         else:
           paginator = tables.queryStudents(2, request.POST['search_entry'])
           allStudents, allStudents['students'] = {}, paginator.getPage(0)
+          request.session['paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allStudents)
       else:
         if request.POST['search_type'] != 'full_scan':
@@ -344,6 +387,7 @@ def mentorProfile(request, id):
         else:
           paginator = tables.queryStudents(2, request.POST['search_entry'])
           allStudents, allStudents['students'] = {}, paginator.getPage(0)
+          request.session['paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allStudents)
       request.session['paginator'] = paginator
     elif 'pair_student' in request.POST: #pair mentor to user
@@ -364,6 +408,22 @@ def mentorProfile(request, id):
         tables.appendStudent(request.POST['id'], allStudents)
 
       return HttpResponse(status=204)
+    elif 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allStudents)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allStudents)
+      return JsonResponse({})
+    else:
+      return JsonResponse({})
+
+
 
 
 
@@ -466,7 +526,7 @@ def createOrganization(request):
 
       return redirect('/organization/profile/'+x, newProfile=z)
     else:
-      h   = {}
+      h, h['cities'] = {}, cities
       return render(request, 'wkit/Organizations/createOrganization.html', h)
   else:
     return HttpResponseRedirect('/')
@@ -548,10 +608,15 @@ def createInterest(request):
 
   return render(request, 'wkit/Interests/createInterest.html', {})
 
+
+
 @login_required(login_url = login_url)
 def searchInterest(request):
   if request.method == 'GET':
-    return render(request, 'wkit/Interests/searchInterest.html', {})
+    paginator = tables.queryInterests('')
+    allInterests, allInterests['interests'] = {}, paginator.getPage(0)
+    request.session['paginator'] = json.dumps(vars(paginator))
+    return render(request, 'wkit/Interests/searchInterest.html', allInterests)
   else: 
     if 'interest' in request.POST:
       print('request.POST is: ', request.POST)

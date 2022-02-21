@@ -549,10 +549,11 @@ async def insertProgram(program, id):
   response = table.put_item(
     Item={
       'id': id,
-      'name': program['name'],
+      'program_name': program['program_name'],
       'organizationID': program['organizationID'],
       'phone_number': program['phone_number'],
       'email': program['email'],
+      'interest': program['interest'],
       'time_commitment': program['time_commitment'],
       'program_duration': program['program_duration'],
       'application_deadlines': program['application_deadlines'],
@@ -714,19 +715,21 @@ async def insertInterest(interest):
 
 
 def queryInterests(interest):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_interest_table')
+  """dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_interest_table')"""
   
   if (interest != ""):
-    response = table.query(
+    """response = table.query(
       KeyConditionExpression=Key('interest').eq(interest)
     )
     
-    return response['Items']
+    return response['Items']"""
+
+    return Paginator('wkit_interest_table', 10, {
+      'FilterExpression': Attr('interest').contains(interest),
+    })
   else:
-    response = table.scan()
-    
-    return response['Items']
+    return Paginator('wkit_interest_table', 10)
 
 def deleteInterest(interest):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')

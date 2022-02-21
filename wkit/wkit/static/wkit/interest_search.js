@@ -80,3 +80,19 @@ function lastPage() {
   }
 
 }
+
+function deleteInterest(interest) {
+	document.getElementById('interest_' + interest).remove();
+	
+		fetch('', {
+			method: 'POST',
+			headers: {
+				'X-CSRFToken': csrftoken,
+				'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+			},
+			body: new URLSearchParams({
+        'interest': interest
+    	})
+		})
+}
+

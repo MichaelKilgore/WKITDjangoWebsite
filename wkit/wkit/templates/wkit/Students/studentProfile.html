@@ -32,7 +32,7 @@
   </tr>
 	<tr height=50>
     <td>Phone Number</td>
-    <td><input class="enableEdit" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ student.phone_number }}" readonly></td> 
+    <td><input class="enableEdit" placeholder="xxx-xxx-xxxx" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ student.phone_number }}" readonly></td> 
   </tr>
 	<tr height=50>
     <td>Address</td>
@@ -160,9 +160,13 @@
 			</div>
 		</td>
 	</tr>
-	<tr height=50>
+	<tr height=200>
     <td>Notes</td>
-    <td><input class="enableEdit" id="notes" name="notes" value="{{ student.notes }}" readonly></td> 
+    <td>
+      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
+        {{ student.notes }}
+      </textarea>
+    </td> 
   </tr>
 	<tr height=50>
 		<td>Paired Mentor</td>	
@@ -350,6 +354,14 @@
   </tr>
 </table>
 
+<br>
+<div style="position: absolute; right: 150;">
+  <button onClick="mentorLastPage()")>&larr;</button>
+  <span id="page_num">0</span>
+  <button onClick="mentorNextPage()")>&rarr;</button>
+</div>
+
+
 <h1>Attach Existing Scholarship</h1>
 <div style="background-color:#E6E6FA; padding: 10px;">
 {% csrf_token %}
@@ -441,6 +453,10 @@
 <script src="{% static 'wkit/student_profile.js' %}"></script>
 <script src="{% static 'wkit/create.js' %}"></script>
 <script src="{% static 'wkit/csrftoken.js' %}"></script>
+
+<script src="{% static 'wkit/mentor_search.js' %}"></script>
+<script src="{% static 'wkit/scholarship_search.js' %}"></script>
+<script src="{% static 'wkit/program_search.js' %}"></script>
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">

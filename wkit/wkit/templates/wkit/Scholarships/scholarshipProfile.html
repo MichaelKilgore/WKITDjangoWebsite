@@ -39,7 +39,11 @@
   </tr>
   <tr height=50>
     <td>Notes</td>
-    <td><input class="enableEdit" id="notes" name="notes" value="{{ scholarship.notes }}" readonly></td> 
+    <td>
+      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
+        {{ student.notes }}
+      </textarea>
+    </td> 
   </tr>
 
 

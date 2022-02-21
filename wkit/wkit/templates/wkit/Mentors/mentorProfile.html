@@ -14,7 +14,7 @@
   </tr>
 	<tr height=50 hidden>
 		<td>ID</td>
-		<td><input name="id" value="{{ mentor.id }}" readonly></td>
+		<td><input id="mentor_id" name="id" value="{{ mentor.id }}" readonly></td>
 	</tr>
   <tr height=50>
     <td>First Name</td>
@@ -30,7 +30,7 @@
   </tr>
 	<tr height=50>
     <td>Phone Number</td>
-    <td><input class="enableEdit" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ mentor.phone_number }}" readonly></td> 
+    <td><input class="enableEdit" placeholder="xxx-xxx-xxxx" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ mentor.phone_number }}" readonly></td> 
   </tr>
 	<tr height=50>
 		<td>Address</td>
@@ -133,7 +133,11 @@
 	</tr>
 	<tr height=50>
     <td>Notes</td>
-    <td><input class="enableEdit" id="notes" name="notes" value="{{ mentor.notes }}" readonly></td> 
+    <td>
+        <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
+        {{ student.notes }}
+        </textarea>
+    </td> 
   </tr>
 
 	<tr height=50>
@@ -192,6 +196,19 @@
   </tr>
 </table>
 
+{% csrf_token %}
+
+<br>
+<div style="position: absolute; right: 150;">
+  <button onClick="lastPage()")>&larr;</button>
+   <span id="page_num">0</span>
+  <button onClick="nextPage()")>&rarr;</button>
+</div>
+<br>
+<br>
+
+
+
 <br><br>
 <button type="button" style="color: red;" onClick="deleteStudent('{{ student.id }}')">Delete</button>
 <br><br>
@@ -207,6 +224,8 @@
 <script src="{% static 'wkit/mentor_profile.js' %}"></script>
 <script src="{% static 'wkit/create.js' %}"></script>
 <script src="{% static 'wkit/csrftoken.js' %}"></script>
+<script src="{% static 'wkit/pair_student_table.js' %}"></script>
+
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
