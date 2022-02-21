@@ -390,8 +390,8 @@ def mentorProfile(request, id):
           request.session['paginator'] = json.dumps(vars(paginator))
           return JsonResponse(allStudents)
       request.session['paginator'] = paginator
-    elif 'pair_student' in request.POST: #pair mentor to user
-      user = tables.getStudent(request.POST['id'])
+    elif 'pair_student' in request.POST: #pair student to user
+      user = tables.getMentor(request.POST['id'])
 
       allStudents = []
       checker = {}
@@ -705,7 +705,7 @@ def scholarshipProfile(request, id):
 
       z, z['scholarship'] = {}, request.POST
 
-      return redirect('/scholarship/profile/'+z['mentor']['id'], newProfile=z)
+      return redirect('/scholarship/profile/'+z['scholarship']['id'], newProfile=z)
     else: #delete
       tables.deleteScholarship(request.POST['id'])
 

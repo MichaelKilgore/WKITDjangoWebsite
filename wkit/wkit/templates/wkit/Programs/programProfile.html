@@ -2,7 +2,8 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ program.name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ program.program_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;program profile</p>
 
 <form method="post">
 {% csrf_token %}
@@ -74,9 +75,7 @@
   <tr height=50>
     <td>Start Dates</td>
     <td>
-        <textarea rows="10" cols="60" class="enableEdit" name="start_dates" id="notes" class="field-long field-textarea" readonly>
-        {{ program.start_dates }}
-        </textarea>
+        <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ program.notes }}</textarea>
     </td>
   </tr>
   <tr height=50>

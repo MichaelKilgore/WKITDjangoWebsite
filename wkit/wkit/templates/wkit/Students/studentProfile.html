@@ -2,7 +2,8 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ student.first_name }} {{ student.last_name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ student.first_name }} {{ student.last_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;student profile</p>
 
 
 <form id="student_profile_edit_form" method="post">
@@ -163,9 +164,7 @@
 	<tr height=200>
     <td>Notes</td>
     <td>
-      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
-        {{ student.notes }}
-      </textarea>
+      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ student.notes }}</textarea>
     </td> 
   </tr>
 	<tr height=50>

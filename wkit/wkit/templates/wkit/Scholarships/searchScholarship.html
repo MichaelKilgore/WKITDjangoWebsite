@@ -44,14 +44,14 @@
 	<br>
 </form>
 
-<table id="scholarship-search-table" class="search-table-interest">
+<table id="scholarship-search-table" class="search-table">
   <tr>
     <th>Scholarship Name</th>
 		<th>Amount</th>
   </tr>
 	{% for scholarship in scholarships %}
   <tr id="{{ scholarship.id }}">
-    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.scholarship_name }}</a></td>
     <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">${{ scholarship.amount }}</a></td>
   </tr>
 	{% endfor %}

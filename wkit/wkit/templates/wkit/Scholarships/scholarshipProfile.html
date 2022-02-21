@@ -4,7 +4,10 @@
 
 {% load static %}
 
-<h1>{{ scholarship.scholarship_name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ scholarship.scholarship_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;scholarship profile</p>
+
+
 
 <form id="student_profile_edit_form" method="post">
 {% csrf_token %}
@@ -40,9 +43,7 @@
   <tr height=50>
     <td>Notes</td>
     <td>
-      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
-        {{ student.notes }}
-      </textarea>
+      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ scholarship.notes }}</textarea>
     </td> 
   </tr>
 

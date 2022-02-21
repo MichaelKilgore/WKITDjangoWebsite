@@ -2,7 +2,10 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ organization.organization_name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ student.organization_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;organization profile</p>
+
+
 
 <form method="post">
 {% csrf_token %}
@@ -54,9 +57,7 @@
 	<tr>
     <td>Notes</td>
     <td>
-       <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
-        {{ student.notes }}
-      </textarea>
+       <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ organization.notes }}</textarea>
     </td> 
   </tr>
 
