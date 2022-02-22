@@ -135,8 +135,10 @@ function pairStudent(id, student_id, fullName, rowIndex) {
   var newRow = table.insertRow();
   var firstCell = newRow.insertCell();
   var secondCell = newRow.insertCell();
-  firstCell.innerHTML = "<a href=\"/mentor/profile/" + id + "\">" + fullName + "</a>";
-  secondCell.outerHTML = "<td class=\"students_table_delete_button\" hidden><button style=\"color: red\" type=\"button\" onClick=\"removeStudent('" + student_id  +  "', '" + id +  "')\">delete</button></td>";
+  firstCell.innerHTML = "<a href=\"/student/profile/" + id + "\">" + fullName + "</a>";
+  secondCell.className = "student_table_delete_button";
+  secondCell.hidden = true;
+  secondCell.innerHTML = "<button style=\"color: red\" type=\"button\" onClick=\"removeStudent('" + student_id  +  "', '" + id +  "')\">delete</button>";
 
   secondCell.setAttribute('hidden', true);
 

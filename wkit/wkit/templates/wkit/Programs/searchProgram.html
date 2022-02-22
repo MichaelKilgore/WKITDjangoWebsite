@@ -27,10 +27,14 @@
 	
 	<td>
 	<label>Search by Interest: </label><br>
+  <div style="max-height:100px; overflow:auto; border:1px solid #000; background-color: coral;">
 		{% for interest in interests  %}
-			<input type="checkbox" name="interest" value="{{ interest.interest }}">
-			<label for="{{ interest.interest }}">{{ interest.interest }}</label><br>
+      <div style="height:25px">
+        <input type="checkbox" name="interest" value="{{ interest.interest }}">
+        <label for="{{ interest.interest }}">{{ interest.interest }}</label>
+      </div>
 		{% endfor %}
+  </div>
 	</td>
 
 	<td>
@@ -77,9 +81,9 @@
 
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="lastPage()")>&larr;</button>
+  <button onClick="programLastPage()")>&larr;</button>
    <span id="page_num">0</span>
-  <button onClick="nextPage()")>&rarr;</button>
+  <button onClick="programNextPage()")>&rarr;</button>
 </div>
 <br>
 <br>

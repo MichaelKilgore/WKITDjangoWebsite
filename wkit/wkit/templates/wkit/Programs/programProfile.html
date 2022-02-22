@@ -2,7 +2,8 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ program.name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ program.program_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;program profile</p>
 
 <form method="post">
 {% csrf_token %}
@@ -18,7 +19,7 @@
 	</tr>
   <tr height=50>
     <td>Program Name</td>
-    <td><input class="enableEdit" id="name" name="name" value="{{ program.name }}" readonly></td> 
+    <td><input class="enableEdit" id="name" name="program_name" value="{{ program.program_name }}" readonly></td> 
   </tr>
   <tr height=50>
     <td>Organization</td>
@@ -35,7 +36,7 @@
   </tr>
 	<tr height=50>
     <td>Phone Number</td>
-    <td><input class="enableEdit" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ student.phone_number }}" readonly></td> 
+    <td><input class="enableEdit" placeholder="xxx-xxx-xxxx" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ program.phone_number }}" readonly></td> 
   </tr>
 	<tr height=50>
     <td>Email</td>
@@ -71,9 +72,27 @@
 			</select>
 		</td> 
   </tr>
+  <tr height=50>
+    <td>Start Dates</td>
+    <td>
+        <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ program.notes }}</textarea>
+    </td>
+  </tr>
+  <tr height=50>
+    <td>Application Deadlines</td>
+    <td>
+        <textarea rows="10" cols="60" class="enableEdit" name="application_deadlines" id="notes" class="field-long field-textarea" readonly>
+        {{ program.application_deadlines }}
+        </textarea>
+    </td>
+  </tr>
 	<tr height=50>
     <td>Notes</td>
-    <td><input class="enableEdit" id="notes" name="notes" value="{{ program.notes }}" readonly></td> 
+    <td>
+        <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
+        {{ student.notes }}
+        </textarea>
+    </td> 
   </tr>
 
 </table>

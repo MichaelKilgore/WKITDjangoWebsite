@@ -1,4 +1,4 @@
-function nextPage() {
+function mentorNextPage() {
   var num = document.getElementById('page_num').innerHTML;
 
   fetch('', {
@@ -9,6 +9,7 @@ function nextPage() {
     },
     body: new URLSearchParams({
       'next_page': num,
+      'mentor': true,
     })
   })	
   .then(response => response.json())
@@ -44,7 +45,7 @@ function nextPage() {
 
 }
 
-function lastPage() {
+function mentorLastPage() {
   var num = document.getElementById('page_num').innerHTML;
   if (parseInt(num) > 1) {
     fetch('', {
@@ -55,6 +56,7 @@ function lastPage() {
       },
       body: new URLSearchParams({
         'last_page': num,
+        'mentor': true,
       })
     })	
     .then(response => response.json())

@@ -327,10 +327,11 @@ async def convertStudent(id):
   )
 
 
+#pair mentor
 async def pairMentor(id, mentor_id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_student_table')
-  
+
   response = table.update_item(
     Key={
       'id': id
@@ -341,7 +342,7 @@ async def pairMentor(id, mentor_id):
     },
     ReturnValues="UPDATED_NEW"
   )
-  
+
   return response
 
 def appendScholarship(id, allScholarships):
@@ -408,7 +409,6 @@ def getMentor(id):
     KeyConditionExpression=Key('id').eq(id)
   )
 
-
   if len(response['Items']) == 1:
     return response['Items'][0] 
   else:
@@ -451,39 +451,37 @@ async def updateMentor(id, mentor):
   #get array of student ids to be deleted
   deleted_students = []
   if 'deleted_students' in mentor:
-    if len(student.getlist('deleted_students')) == 1:
-      deleted_students = [student['deleted_students']]
+    if len(mentor.getlist('deleted_students')) == 1:
+      deleted_students = [mentor['deleted_students']]
     else:
       for val in student.getlist('deleted_students'):
         deleted_students.append(val)
 
+  print('the students are: ', deleted_students)
 
-  #final set of new scholarships
-  h = {}
-  for val in deleted_students:
-    h[val] = True
+  #UNPAIR THE STUDENT FROM THIS MENTOR
+  for student in deleted_students:
+    await pairMentor(student, "")
 
-  new_students = []
-  for val in student.getlist('students'):
-    if val not in h: 
-      new_students.append(val)
-  
   #setting interests
   interests = ""
-  if len(student.getlist('interest')) == 1:
-    interests = student['interest']
+  if len(mentor.getlist('interest')) == 1:
+    interests = mentor['interest']
   else:
-    for val in student.getlist('interest'):
+    counter = 0
+    for val in mentor.getlist('interest'):
+      counter += 1
       interests += val + ', '
+      if counter == 5:
+        break
     interests = interests[:-2]
-
 
   #sending update response
   response = table.update_item(
     Key={
       'id': id
     },
-    UpdateExpression="set email=:a, phone_number=:b, last_name=:c, first_name=:d, address=:e, apartment=:f, city=:g, zip=:h, interest=:i, preferred_method=:j, gender=:k, ethnicity=:l, notes=:m, students=:n",
+    UpdateExpression="set email=:a, phone_number=:b, last_name=:c, first_name=:d, address=:e, apartment=:f, city=:g, zip=:h, interest=:i, preferred_method=:j, gender=:k, ethnicity=:l, notes=:m",
     ExpressionAttributeValues={
       ':a': mentor['email'],
       ':b': mentor['phone_number'],
@@ -498,7 +496,6 @@ async def updateMentor(id, mentor):
       ':k': mentor['gender'],
       ':l': mentor['ethnicity'],
       ':m': mentor['notes'],
-      ':n': new_students,
     },
     ReturnValues="UPDATED_NEW"
   )
@@ -522,40 +519,23 @@ def appendStudent(id, allStudents):
   
   return response
 
+#TODO: DEFINATELY NEED AN INDEX ON MENTOR_ID
 def getStudents(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_mentor_table')
+  table = dynamodb.Table('wkit_student_table')
   
-  response = table.query(
-    KeyConditionExpression=Key('id').eq(id)
-  )
+  response = table.scan()
+ 
+  ans = []
 
-  user = {}
-  if len(response['Items']) == 1:
-    user = response['Items'][0] 
-  else:
-    user = {}
+  for user in response['Items']:
+    if 'mentor_id' in user:
+      if user['mentor_id'] == id:
+        ans.append(user)
 
-  if 'students' in user:
-    #dynamodb = boto3.resource('dynamodb')
-    dynamodb = boto3.resource("dynamodb", region_name='us-west-2')
+  print('the students are: ', ans)
 
-    list_of_keys = []
-    for key in user['students']:
-      list_of_keys.append({'id': key})  
-
-    batch_keys = {
-      'wkit_student_table': {
-        'Keys': list_of_keys
-      }
-    }
-
-    response = dynamodb.batch_get_item(RequestItems=batch_keys)
-
-    return response['Responses']['wkit_student_table']
-  else:
-    return []
-   
+  return ans
 
 ######################## PROGRAM ########################
 
@@ -573,10 +553,11 @@ async def insertProgram(program, id):
   response = table.put_item(
     Item={
       'id': id,
-      'name': program['name'],
+      'program_name': program['program_name'],
       'organizationID': program['organizationID'],
       'phone_number': program['phone_number'],
       'email': program['email'],
+      'interest': program['interest'],
       'time_commitment': program['time_commitment'],
       'program_duration': program['program_duration'],
       'application_deadlines': program['application_deadlines'],
@@ -731,19 +712,21 @@ async def insertInterest(interest):
 
 
 def queryInterests(interest):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_interest_table')
+  """dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_interest_table')"""
   
   if (interest != ""):
-    response = table.query(
+    """response = table.query(
       KeyConditionExpression=Key('interest').eq(interest)
     )
     
-    return response['Items']
+    return response['Items']"""
+
+    return Paginator('wkit_interest_table', 10, {
+      'FilterExpression': Attr('interest').contains(interest),
+    })
   else:
-    response = table.scan()
-    
-    return response['Items']
+    return Paginator('wkit_interest_table', 10)
 
 def deleteInterest(interest):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -762,7 +745,7 @@ async def insertScholarship(scholarship, id):
   response = table.put_item(
     Item={
       'id': id,
-      'scholarship_name': scholarship['name'],
+      'scholarship_name': scholarship['scholarship_name'],
       'amount': int(scholarship['amount']),
       'type': scholarship['type'],
       'notes': scholarship['notes']

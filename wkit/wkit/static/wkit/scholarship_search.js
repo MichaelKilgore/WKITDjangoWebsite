@@ -1,4 +1,4 @@
-function nextPage() {
+function scholarshipNextPage() {
   var num = document.getElementById('page_num').innerHTML;
 
   fetch('', {
@@ -9,6 +9,7 @@ function nextPage() {
     },
     body: new URLSearchParams({
       'next_page': num,
+      'scholarship': true,
     })
   })	
   .then(response => response.json())
@@ -38,7 +39,7 @@ function nextPage() {
 
 }
 
-function lastPage() {
+function scholarshipLastPage() {
   var num = document.getElementById('page_num').innerHTML;
   if (parseInt(num) > 0) {
     fetch('', {
@@ -49,6 +50,7 @@ function lastPage() {
       },
       body: new URLSearchParams({
         'last_page': num,
+        'scholarship': true,
       })
     })	
     .then(response => response.json())

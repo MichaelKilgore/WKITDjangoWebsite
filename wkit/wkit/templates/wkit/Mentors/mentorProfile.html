@@ -2,7 +2,8 @@
   {% include "wkit/menu.html" %}
 {% endblock %}
 
-<h1>{{ mentor.first_name }} {{ mentor.last_name }}</h1>
+<h1 style="padding-bottom: 0px;margin: 0;">{{ mentor.first_name }} {{ mentor.last_name }}</h1>
+<p style="margin: 0; padding-bottom: 15px;">&nbsp;&nbsp;&nbsp;mentor profile</p>
 
 <form id="mentor_profile_edit_form" method="post">
 {% csrf_token %}
@@ -14,7 +15,7 @@
   </tr>
 	<tr height=50 hidden>
 		<td>ID</td>
-		<td><input name="id" value="{{ mentor.id }}" readonly></td>
+		<td><input id="mentor_id" name="id" value="{{ mentor.id }}" readonly></td>
 	</tr>
   <tr height=50>
     <td>First Name</td>
@@ -30,7 +31,7 @@
   </tr>
 	<tr height=50>
     <td>Phone Number</td>
-    <td><input class="enableEdit" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ mentor.phone_number }}" readonly></td> 
+    <td><input class="enableEdit" placeholder="xxx-xxx-xxxx" id="phone_number" name="phone_number" type="phone-number" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="{{ mentor.phone_number }}" readonly></td> 
   </tr>
 	<tr height=50>
 		<td>Address</td>
@@ -59,7 +60,7 @@
 	<tr height=50>
     <td>Field(s) Of Interest</td>
     <td>
-			<input class="nonEditMode" id="interest" name="interest" value="{{ mentor.interest }}" readonly>
+			<input class="nonEditMode" id="interest" value="{{ mentor.interest }}" readonly>
 
 			<div id="add-another-interest" hidden>
 				<select name="interest" class="field-select" id="field-of-interest-1">
@@ -75,7 +76,7 @@
   </tr>
 	<tr height=50>
     <td>Career Job Title</td>
-    <td><input class="enableEdit" id="email" name="email" type="company" value="{{ mentor.job_title }}" readonly></td> 
+    <td><input class="enableEdit" id="email" name="job_title" type="company" value="{{ mentor.job_title }}" readonly></td> 
   </tr>
 	<tr height=50>
     <td>Is a Volunteer</td>
@@ -133,7 +134,10 @@
 	</tr>
 	<tr height=50>
     <td>Notes</td>
-    <td><input class="enableEdit" id="notes" name="notes" value="{{ mentor.notes }}" readonly></td> 
+    <td>
+      <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ mentor.notes }}</textarea>
+    </td> 
+    </td> 
   </tr>
 
 	<tr height=50>
@@ -143,7 +147,7 @@
 				{% for student in mentor.students %}
           <tr class="student_table_row" id="row_{{ student.id }}">
             <td>
-              <input name="students" value="{{ student.first_name }} {{ student.last_name }}" readonly>
+              <a href="/student/profile/{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</a>
             </td>
             <td class="student_table_delete_button" hidden>
               <button style="color: red" type="button" onClick="removeStudent('{{ student.id }}', '{{ mentor.id }}')">delete</button>
@@ -160,7 +164,7 @@
 <button type="button" onClick="enableEdit()">Edit</button><br>
 </div>
 
-<input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden>
+<input id="saveButton" type="submit" value="save" hidden>
 
 </form>
 
@@ -168,32 +172,11 @@
 
 
 
-<h1>Pair with Student</h1>
-<div style="background-color:#E6E6FA; padding: 10px;">
-  <label for="search-type">Search by: </label>
-    <select id="student_pair_search_type" name="search_type">
-      <option value="email">Email</option>
-      <option value="phone_number">Phone Number</option>
-      <option value="full_scan">Full Scan</option>	
-    </select>
 
-    <input id="student_pair_search_entry" type="text" name="search_entry" value="">
-    <input type="submit" value="Search" onClick="getStudents('{{ mentor.id }}')" />
-    <br>
-</div>
-<br>
 
-<table id="student-search-table" class="search-table">
-  <tr>
-    <th>Name</th>
-    <th>Phone Number</th> 
-    <th>Email</th>
-    <th></th>
-  </tr>
-</table>
 
 <br><br>
-<button type="button" style="color: red;" onClick="deleteStudent('{{ student.id }}')">Delete</button>
+<button type="button" style="color: red;" onClick="deleteMentor('{{ student.id }}')">Delete</button>
 <br><br>
 
 
@@ -207,6 +190,8 @@
 <script src="{% static 'wkit/mentor_profile.js' %}"></script>
 <script src="{% static 'wkit/create.js' %}"></script>
 <script src="{% static 'wkit/csrftoken.js' %}"></script>
+<script src="{% static 'wkit/pair_student_table.js' %}"></script>
+
 
 {% block extrahead %}
   <link rel="stylesheet" type="text/css" href="{% static 'wkit/style.css' %}">
