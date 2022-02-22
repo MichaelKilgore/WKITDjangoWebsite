@@ -216,6 +216,7 @@ table.profile td:first-child {
 .form-style-1 input[type=program-duration],
 .form-style-1 input[type=organization-name],
 .form-style-1 input[type=interest-name],
+.form-style-1 input[type=city],
 textarea, 
 select{
 	box-sizing: border-box;
@@ -244,6 +245,7 @@ select{
 .form-style-1 input[type=zip]:focus,
 .form-style-1 input[type=job-title]:focus,
 .form-style-1 input[type=program-name]:focus,
+.form-style-1 input[type=city]:focus,
 
 
 /* PROGRAM MULTIPLE CHOICE */

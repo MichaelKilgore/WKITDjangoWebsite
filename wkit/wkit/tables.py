@@ -28,8 +28,6 @@ class Paginator:
 
     page = self.pages[page_num]
     lastEvaluatedKey = page["LastEvaluatedKey"] if "LastEvaluatedKey" in page else None
-    if "LastEvaluatedKey" in page:
-      print(f"in getPage({page_num}): LastEvaluatedKey={lastEvaluatedKey}")
     res = {
         "pageNum": page_num,
         "LastEvaluatedKey": lastEvaluatedKey,
@@ -46,7 +44,6 @@ class Paginator:
     return len(self.pages) > page_num
 
   def advanceToPage(self, page_num):
-    print(f"advanceToPage({page_num})")
     while (page_num >= len(self.pages)):
       if len(self.pages) == 0:
         self.pages.append(self.nextPage(None))
@@ -55,10 +52,8 @@ class Paginator:
         if not token:
           break
         self.pages.append(self.nextPage(token))
-    print(f"leaving advanceToPage(): len={len(self.pages)}")
 
   def nextPage(self, token):
-    print(f"loading page {len(self.pages)}: {token}")
     page = {
         "Items": [],
     }
@@ -73,7 +68,7 @@ class Paginator:
     return page
 
   def nextBatch(self, token):
-    print(f"loading batch {len(self.pages)}: {token}")
+    print(f"loading batch from db: len(pages)={len(self.pages)}: token={token}")
     kwargs = self.kwargs.copy()
     kwargs['Limit'] = self.page_size
     if token:
@@ -421,12 +416,12 @@ def queryMentors(search_type, search_entry):
   table = dynamodb.Table('wkit_mentor_table')
   print(f"search mentors on {search_entry}")
 
-  if search_type == 0: #search by email
+  if search_type == 'email': #search by email
     return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
-  elif search_type == 1: #search by phone number
+  elif search_type == 'phone_number': #search by phone number
     return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
