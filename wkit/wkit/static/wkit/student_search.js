@@ -12,17 +12,8 @@ function nextPage() {
       'current_page': num,
     })
   })	
-  .then( (response) => {
-    if (response.status === 500) {
-      return {};
-    } else {
-      return response.json();
-    }
-   })
+  .then(response => response.json())
 	.then(data => {
-    if (data.students == null) {
-      return;
-    }
     if (data.students.length > 0) { 
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;

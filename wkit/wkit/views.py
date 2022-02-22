@@ -52,19 +52,19 @@ def nextOrPrevPage(request, items_label, direction):
     request.session['paginator'] = jsonpickle.encode(paginator)
     return JsonResponse(data)
 
-def doSearch(request, fetch_func, items_label):
+def doSearch(request, fetch_func, items_label, uri):
   if request.method == 'GET':
     paginator = fetch_func('full_scan', None)
     data = paginator.getPage(0, items_label)
     request.session['paginator'] = jsonpickle.encode(paginator)
-    return render(request, 'wkit/Students/searchStudent.html', data)
+    return render(request, uri, data)
   else:
     if 'search_type' in request.POST:
       search_type = request.POST['search_type']
       paginator = fetch_func(search_type, request.POST['search_entry'])
       data = paginator.getPage(0, items_label)
       request.session['paginator'] = jsonpickle.encode(paginator)
-      return render(request, 'wkit/Students/searchStudent.html', data)
+      return render(request, uri, data)
     elif 'action' in request.POST and request.POST['action'] == 'next_page':
       return nextOrPrevPage(request, items_label, 'forward')
 
@@ -75,7 +75,7 @@ def doSearch(request, fetch_func, items_label):
 
 @login_required(login_url = login_url)
 def searchStudent(request, key=None):
-  return doSearch(request, tables.queryStudents, "students")
+  return doSearch(request, tables.queryStudents, "students", 'wkit/Students/searchStudent.html')
 
 
 @login_required(login_url = login_url)
@@ -280,7 +280,7 @@ def createMentor(request):
 
 @login_required(login_url = login_url)
 def searchMentor(request, key=None):
-  return doSearch(request, tables.queryMentors, "mentors")
+  return doSearch(request, tables.queryMentors, "mentors", 'wkit/Mentors/searchMentor.html')
 
 
 @login_required(login_url = login_url)
@@ -474,9 +474,10 @@ def createOrganization(request):
   else:
     return HttpResponseRedirect('/')
 
+
 @login_required(login_url = login_url)
 def searchOrganization(request):
-  return doSearch(request, tables.queryOrganizations, "organizations")
+  return doSearch(request, tables.queryOrganizations, "organizations", 'wkit/Organizations/searchOrganization.html')
 
 
 @login_required(login_url = login_url)

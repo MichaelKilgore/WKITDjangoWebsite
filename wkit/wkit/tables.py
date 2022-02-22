@@ -421,12 +421,12 @@ def queryMentors(search_type, search_entry):
   table = dynamodb.Table('wkit_mentor_table')
   print(f"search mentors on {search_entry}")
 
-  if search_type == 0: #search by email
+  if search_type == 'email': #search by email
     return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
-  elif search_type == 1: #search by phone number
+  elif search_type == 'phone_number': #search by phone number
     return Paginator('wkit_mentor_table', 10, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
