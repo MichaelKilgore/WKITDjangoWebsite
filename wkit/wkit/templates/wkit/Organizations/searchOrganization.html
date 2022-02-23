@@ -28,7 +28,7 @@
   </tr>
 	{% for organization in organizations %}
   <tr>
-    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.organization_name }}</a></td>
     <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.city }}</a></td>
   </tr>
 	{% endfor %}

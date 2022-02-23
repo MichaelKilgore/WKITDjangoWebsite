@@ -263,18 +263,20 @@ def getAllStudents():
 def queryStudents(search_type, search_entry):
   print(f"search on {search_entry}")
 
+  if search_type == 'name': #search by name
+    return Paginator('wkit_student_table', 20, {
+      'FilterExpression': Attr('first_name').contains(search_entry) | Attr('last_name').contains(search_entry)
+    })
   if search_type == 'email': #search by email
-    #  'IndexName': 'email-index',
-    return Paginator('wkit_student_table', 10, {
+    return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('email').contains(search_entry),
     })
   elif search_type == 'phone_number': #search by phone number
-    #  'IndexName': 'phone_number-index',
-    return Paginator('wkit_student_table', 10, {
+    return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator('wkit_student_table', 10)
+    return Paginator('wkit_student_table', 20)
 
 async def convertStudent(id):
   #get student info
@@ -909,13 +911,3 @@ def updateCSV():
 
     writer.writerow(row)
   
-
-
-
-
-
-
-
-
-
-

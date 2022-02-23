@@ -10,13 +10,14 @@
 {% csrf_token %}
 
 	<label for="search-type">Search by: </label>
-	<select id="search_type" name="search_type">
-		<option value="email">Email</option>
-		<option value="phone_number">Phone Number</option>
-		<option value="full_scan">Full Scan</option>	
+  <select id="search_type" name="search_type">
+    <option value="name" {% if request.POST.search_type == "name" %}selected{% endif %}>Name</option>
+		<option value="email" {% if request.POST.search_type == "email" %}selected{% endif %}>Email</option>
+		<option value="phone_number" {% if request.POST.search_type == "phone_number" %}selected{% endif %}>Phone Number</option>
+		<option value="full_scan" {% if request.POST.search_type == "full_scan" %}selected{% endif %}>Full Scan</option>
 	</select>
 
-	<input id="search_entry" type="text" name="search_entry" value="">
+  <input id="search_entry" type="text" name="search_entry" value="{{request.POST.search_entry}}">
 	<input type="submit" value="Search" />
 	<br>
 </form>
