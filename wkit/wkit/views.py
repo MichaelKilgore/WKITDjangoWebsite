@@ -53,6 +53,7 @@ def nextOrPrevPage(request, items_label, direction):
     return JsonResponse(data)
 
 def doSearch(request, fetch_func, items_label, uri):
+  print(f"request = {request}: request.POST={request.POST}")
   if request.method == 'GET':
     paginator = fetch_func('full_scan', None)
     data = paginator.getPage(0, items_label)
@@ -524,38 +525,7 @@ def createInterest(request):
 
 @login_required(login_url = login_url)
 def searchInterest(request):
-  if request.method == 'GET':
-    paginator = tables.queryInterests('')
-    allInterests, allInterests['interests'] = {}, paginator.getPage(0)
-    request.session['paginator'] = json.dumps(vars(paginator))
-    return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-  else: 
-    if 'interest' in request.POST:
-      print('request.POST is: ', request.POST)
-      tables.deleteInterest(request.POST['interest'])
-      return HttpResponse(status=204)
-
-    if 'search_entry' in request.POST:
-      if request.POST['search_entry'] != "":
-        allInterests, allInterests['interests'] = {}, tables.queryInterests(request.POST['search_entry'])
-        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-      else:
-        allInterests, allInterests['interests'] = {}, tables.queryInterests('')
-        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allStudents)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allInterests)
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
+  return doSearch(request, tables.queryInterests, "interests", 'wkit/Interests/searchInterest.html')
 
 
 @login_required(login_url = login_url)
@@ -660,11 +630,6 @@ def downloadGraph(request):
       return render(request, 'wkit/Interests/searchInterest.html', allInterests)
 
 
-
-
-
-
-
 def logout(request):
   return redirect('/admin/logout/')
 
@@ -673,12 +638,6 @@ def logout(request):
 @login_required(login_url = login_url)
 def index(request):
   return render(request, 'wkit/index.html', {})
-
-
-
-
-
-
 
 
 

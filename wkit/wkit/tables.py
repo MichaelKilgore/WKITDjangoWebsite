@@ -706,17 +706,9 @@ async def insertInterest(interest):
   return response
 
 
-def queryInterests(interest):
-  """dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_interest_table')"""
-  
-  if (interest != ""):
-    """response = table.query(
-      KeyConditionExpression=Key('interest').eq(interest)
-    )
-    
-    return response['Items']"""
-
+def queryInterests(search_type, interest):
+  if (interest is not None and interest != ""):
+    print(f"searching interests: interest={interest}")
     return Paginator('wkit_interest_table', 10, {
       'FilterExpression': Attr('interest').contains(interest),
     })
