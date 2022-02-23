@@ -267,7 +267,7 @@ def queryStudents(search_type, search_entry):
     return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('first_name').contains(search_entry) | Attr('last_name').contains(search_entry)
     })
-  if search_type == 'email': #search by email
+  elif search_type == 'email': #search by email
     return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('email').contains(search_entry),
     })
@@ -420,18 +420,22 @@ def queryMentors(search_type, search_entry):
   table = dynamodb.Table('wkit_mentor_table')
   print(f"search mentors on {search_entry}")
 
-  if search_type == 'email': #search by email
-    return Paginator('wkit_mentor_table', 10, {
+  if search_type == 'name': #search by name
+    return Paginator('wkit_mentor_table', 20, {
+      'FilterExpression': Attr('first_name').contains(search_entry) | Attr('last_name').contains(search_entry)
+    })
+  elif search_type == 'email': #search by email
+    return Paginator('wkit_mentor_table', 20, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
   elif search_type == 'phone_number': #search by phone number
-    return Paginator('wkit_mentor_table', 10, {
+    return Paginator('wkit_mentor_table', 20, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator('wkit_mentor_table', 10)
+    return Paginator('wkit_mentor_table', 20)
 
 def deleteMentor(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
