@@ -656,7 +656,7 @@ def getOrganization(id):
 def queryOrganizations(search_type, search_entry):
   if search_type == 'Name': #search by name
     return Paginator('wkit_organization_table', 10, {
-      'FilterExpression': Attr('name').contains(search_entry),
+      'FilterExpression': Attr('organization_name').contains(search_entry),
     })
 
   elif search_type == 'City': #search by city

@@ -11,12 +11,12 @@
 
 	<label for="search-type">Search by: </label>
 	<select id="search_type" name="search_type">
-		<option value="Name">Name</option>	
-		<option value="City">City</option>
-		<option value="full_scan">Full Scan</option>
+		<option value="Name" {% if request.POST.search_type == "Name" %}selected{% endif %}>Name</option>
+		<option value="City" {% if request.POST.search_type == "City" %}selected{% endif %}>City</option>
+		<option value="full_scan" {% if request.POST.search_type == "full_scan" %}selected{% endif %}>Full Scan</option>
 	</select>
 
-	<input id="search_entry" type="text" name="search_entry" value="{{ search_entry }}">
+	<input id="search_entry" type="text" name="search_entry" value="{{request.POST.search_entry}}">
 	<input type="submit" value="Search" />
 	<br>
 </form>
