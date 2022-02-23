@@ -33,7 +33,7 @@
 	<label for="search-type">Type: </label>
 	</td>
 	<td>
-    <input type="radio" value="no_preference" name="type" {% if request.POST.type == "no_preference" %}checked{% endif %}>No Preference<br>
+    <input type="radio" value="no_preference" name="type" {% if request.POST.type == None or request.POST.type == "no_preference" %}checked{% endif %}>No Preference<br>
     <input type="radio" value="Internal" name="type" {%if request.POST.type == "Internal" %}checked{% endif %}>Internal<br>
     <input type="radio" value="External" name="type" {%if request.POST.type == "External" %}checked{% endif %}>External<br>
 	</td>

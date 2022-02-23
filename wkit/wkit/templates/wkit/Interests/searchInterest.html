@@ -11,7 +11,7 @@
 
 	<label for="search-type">Search: </label>
   <input type="hidden" name="search_type" value="interest">
-	<input id="search-entry" type="text" name="search_entry">
+  <input id="search-entry" type="text" name="search_entry" value="{{request.POST.search_entry}}">
 	<input type="submit" value="Search" />
 	<br>
 </form>
