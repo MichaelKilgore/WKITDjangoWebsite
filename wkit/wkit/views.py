@@ -52,7 +52,7 @@ def nextOrPrevPage(request, items_label, direction):
     request.session['paginator'] = jsonpickle.encode(paginator)
     return JsonResponse(data)
 
-def doSearch(request, fetch_func, items_label, uri):
+def doSimpleSearch(request, fetch_func, items_label, uri):
   print(f"request = {request}: request.POST={request.POST}")
   if request.method == 'GET':
     paginator = fetch_func('full_scan', None)
@@ -76,7 +76,7 @@ def doSearch(request, fetch_func, items_label, uri):
 
 @login_required(login_url = login_url)
 def searchStudent(request, key=None):
-  return doSearch(request, tables.queryStudents, "students", 'wkit/Students/searchStudent.html')
+  return doSimpleSearch(request, tables.queryStudents, "students", 'wkit/Students/searchStudent.html')
 
 
 @login_required(login_url = login_url)
@@ -281,7 +281,7 @@ def createMentor(request):
 
 @login_required(login_url = login_url)
 def searchMentor(request, key=None):
-  return doSearch(request, tables.queryMentors, "mentors", 'wkit/Mentors/searchMentor.html')
+  return doSimpleSearch(request, tables.queryMentors, "mentors", 'wkit/Mentors/searchMentor.html')
 
 
 @login_required(login_url = login_url)
@@ -478,7 +478,7 @@ def createOrganization(request):
 
 @login_required(login_url = login_url)
 def searchOrganization(request):
-  return doSearch(request, tables.queryOrganizations, "organizations", 'wkit/Organizations/searchOrganization.html')
+  return doSimpleSearch(request, tables.queryOrganizations, "organizations", 'wkit/Organizations/searchOrganization.html')
 
 
 @login_required(login_url = login_url)
@@ -525,7 +525,7 @@ def createInterest(request):
 
 @login_required(login_url = login_url)
 def searchInterest(request):
-  return doSearch(request, tables.queryInterests, "interests", 'wkit/Interests/searchInterest.html')
+  return doSimpleSearch(request, tables.queryInterests, "interests", 'wkit/Interests/searchInterest.html')
 
 
 @login_required(login_url = login_url)
@@ -554,26 +554,27 @@ def createScholarship(request):
 
 @login_required(login_url = login_url)
 def searchScholarship(request):
+  items_label = "scholarships"
   if request.method == 'GET':
-    return render(request, 'wkit/Scholarships/searchScholarship.html', {})
+    paginator = tables.queryScholarships('foo', None, None, None, None)
+    data = paginator.getPage(0, items_label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
+    return render(request, 'wkit/Scholarships/searchScholarship.html', data)
+  elif 'search_type' in request.POST:
+      print(f"searching for name={request.POST['name']}")
+      paginator = tables.queryScholarships(
+        'foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type']
+      )
+      data = paginator.getPage(0, items_label)
+      request.session['paginator'] = jsonpickle.encode(paginator)
+      return render(request, 'wkit/Scholarships/searchScholarship.html', data)
+  elif 'action' in request.POST and request.POST['action'] == 'next_page':
+    return nextOrPrevPage(request, items_label, 'forward')
+
+  elif 'action' in request.POST and request.POST['action'] == 'prev_page':
+    return nextOrPrevPage(request, items_label, 'backward')
   else:
-    if 'name' in request.POST:
-      allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships('foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
-      return render(request, 'wkit/Scholarships/searchScholarship.html', allScholarships)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allStudents)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allStudents)
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
+    return JsonResponse({})
 
 
 

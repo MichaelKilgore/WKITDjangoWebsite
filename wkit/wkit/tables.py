@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 import asyncio
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import And, Attr
 from datetime import date
 from wkit.var import cities, schools, assessments, school_districts
 
@@ -76,8 +76,10 @@ class Paginator:
     dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table(self.table_name)
 
+    print(f"table.scan kwargs={kwargs}")
     rsp = table.scan(**kwargs)
     return {
+      'TableName': self.table_name,
       "Items": rsp["Items"],
       "LastEvaluatedKey": rsp["LastEvaluatedKey"] if "LastEvaluatedKey" in rsp else None
     }
@@ -740,79 +742,46 @@ async def insertScholarship(scholarship, id):
   )
   return response
 
+
+def addClause(expr, clause):
+  if expr is None:
+    return clause
+  return expr & clause
+
 def queryScholarships(id, name, min_amount, max_amount, scholarship_type):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_scholarship_table')
+  """
+    # get off limit keys  
+    off_limits = {}
+    if id != 'foo':
+      student = getStudent(id)
+      if 'scholarships' in student: 
+        for key in student['scholarships']:
+          off_limits[key] = True
+  """
+  expr = None
+  if name is not None and name != "":
+    expr = addClause(expr, Attr('scholarship_name').contains(name))
+  if min_amount is not None and min_amount != "":
+    try:
+      imin = int(min_amount)
+      expr = addClause(expr, Attr('amount').gte(imin))
+    except:
+      print(f"min_amount string should represent a numeric value: {min_amount}")
+  if max_amount is not None and max_amount != "":
+    try:
+      imax = int(max_amount)
+      expr = addClause(expr, Attr('amount').lte(imax))
+    except:
+      print(f"max_amount string should represent a numeric value: {max_amount}")
+  if scholarship_type is not None and scholarship_type != "no_preference":
+      expr = addClause(expr, Attr('type').eq(scholarship_type))
 
+  if expr is not None:
+    query_params = { 'FilterExpression': expr }
+    return Paginator('wkit_scholarship_table', 10, query_params)
 
-  # get off limit keys  
-  off_limits = {}
-  if id != 'foo':
-    student = getStudent(id)
-    if 'scholarships' in student: 
-      for key in student['scholarships']:
-        off_limits[key] = True
+  return Paginator('wkit_scholarship_table', 10)
 
-  if name == "" and min_amount == "" and max_amount == "" and scholarship_type=='no_preference':
-    response = table.scan()
-
-    ans = response['Items']
-    return_ans = []
-
-    for item in ans:
-      if item['id'] not in off_limits:
-        return_ans.append(item)
-    
-    return return_ans
-  else:
-    if min_amount == "":
-      min_amount = "0"
-    if max_amount == "":
-      max_amount = "999999999999999999"
-
-    ans = {}
-    if scholarship_type=='no_preference': #just by name
-      resp = table.scan()
-  
-      for val in resp['Items']:
-        if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-          if val['name'] == name:
-            ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-      
-      return return_ans
-    elif name=="": #just by type
-      resp = table.scan()
-
-      if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-        if val['type'] == scholarship_type:
-          ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-      
-      return return_ans
-    else: #both
-      if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-        if val['type'] == scholarship_type and val['name'] == name:
-          ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-  
-      return return_ans
-  
 def deleteScholarship(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   response = table.delete_item(
