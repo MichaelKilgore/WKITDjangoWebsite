@@ -561,9 +561,9 @@ def scanPrograms():
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   table = dynamodb.Table('wkit_program_table')
 
-  resp = table.scan()
-
-  return resp['Items']
+  return Paginator('wkit_program_table', 10)
+  #resp = table.scan()
+  #return resp['Items']
 
 # time commitments are stored in dynamodb as strings that are either:
 #   greater than 40 hrs/week
@@ -603,8 +603,8 @@ async def insertOrganization(organization, id):
   response = table.put_item(
     Item={
       'id': id,
-      'name': organization['name'],
-      'type': organization['type'],
+      'organization_name': organization['organization_name'],
+      'organization_type': organization['organization_type'],
       'address': organization['address'],
       'city': organization['city'],
       'zip': organization['zip'],
@@ -643,8 +643,9 @@ def queryOrganizations(search_type, search_entry):
     )
     return resp['Items']
   else: #full scan
-    resp = table.scan()
-    return resp['Items']
+    return Paginator('wkit_organization_table', 10)
+    #resp = table.scan()
+    #return resp['Items']
 
 def updateOrganization(id, organization):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -904,40 +905,49 @@ def updateScholarship(id, scholarship):
 def updateCSV():
   import csv
 
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_student_table')
+  students = table.scan()['Items']
+
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_mentor_table')
+  mentors = table.scan()['Items']
+
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_program_table')
+  programs = table.scan()['Items']
+
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_organization_table')
+  organizations = table.scan()['Items']
+
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_interest_table')
+  interests = table.scan()['Items']
+
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_scholarship_table')
+  scholarships = table.scan()['Items']
+  scholar_h = {}
+  for scholarship in scholarships:
+    scholar_h[scholarship['id']] = scholarship['amount'] 
+
+
   with open('file.csv', 'w', encoding='UTF8') as f:
     writer = csv.writer(f)
 
-    writer.writerow(['id','first name', 'last name', 'email', 'phone number', 'address', 'apartment', 'city', 'zip', 'school', 'district', 'grade', 'field(s) of interest', 'assessment result', 'preferred method of contact', 'gender', 'ethnicity', 'notes', 'money given', 'money won', 'number of scholarships'])
+    writer.writerow(['first name', 'last name', 'grade', 'ethnicity', 'gender', 'number of scholarships', 'money allocated'])
 
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_student_table')
+    for student in students:
+      amount = 0
+      if 'scholarships' in student:
+        for id in student['scholarships']:
+          if id in scholar_h:
+            amount += scholar_h[id]
+      row = [student['first_name'], student['last_name'], student['grade'], student['ethnicity'], student['gender'], len(student['scholarships']) if 'scholarships' in student else 0, amount]
+      writer.writerow(row)
 
-    students = table.scan()['Items']
-
-    #for student in students:
-      #writer.writerow(0)
-
-
- 
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_mentor_table')
- 
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_program_table')
-
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_organization_table')
-
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_interest_table')
-
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-    table = dynamodb.Table('wkit_scholarship_table')
-
-    writer.writerow(row)
   
-
-
 
 
 

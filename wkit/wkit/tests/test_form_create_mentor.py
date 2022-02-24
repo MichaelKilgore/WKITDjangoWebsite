@@ -5,8 +5,9 @@ from django.contrib.auth.models import User
 import wkit.tables as tables
 
 class CreateMentorTestCase(TestCase):
-	def setUp(self):
-		self.client = Client()
-		self.user = User.objects.create_user('michael', 'michael.kilgore@gmail.com', 'kilgore')
+  def setUp(self):
+    pass
+		#self.client = Client()
+		#self.user = User.objects.create_user('michael', 'michael.kilgore@gmail.com', 'kilgore')
 
 

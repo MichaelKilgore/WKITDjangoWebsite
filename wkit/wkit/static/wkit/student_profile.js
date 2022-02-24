@@ -194,7 +194,7 @@ function pairMentor(id, mentor_id, fullName, rowIndex) {
 	document.getElementById('mentor-search-table').deleteRow(parseInt(rowIndex));
 
 	var mentor_field = document.getElementById('paired_mentor');	
-	mentor_field.innerHTML = "<a href=\"/mentor/profile/" + id + "\">" + fullName + "</a>";
+	mentor_field.innerHTML = "<a href=\"/mentor/profile/" + mentor_id + "\">" + fullName + "</a>";
 
 	alert("Mentor Paired!");
 }

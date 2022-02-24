@@ -451,15 +451,31 @@ def createProgram(request):
   else:
     return HttpResponseRedirect('/')
 
+
+
 @login_required(login_url = login_url)
 def searchProgram(request):
   if request.method == 'GET':
     h, h['cities'], h['interests'] = {}, cities, tables.getInterests()
-
+    paginator = tables.scanPrograms()
+    h['programs'] = paginator.getPage(0)
+    request.session['paginator'] = json.dumps(vars(paginator))
     return render(request, 'wkit/Programs/searchProgram.html', h)
   else:
-    print('this done worked: ', request.POST)
-    if request.POST['program_name'] == "" and request.POST['search_duration'] == 'Any' and 'city' not in request.POST and 'interest' not in request.POST:
+    if 'next_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      return JsonResponse(allPrograms)
+    elif 'last_page' in request.POST:
+      paginator_dict = json.loads(request.session['paginator'])
+      paginator = tables.Paginator(**paginator_dict)
+      if (int(request.POST['last_page'])-1 >= 0):
+        allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        return JsonResponse(allPrograms)
+
+      return JsonResponse({})
+    elif request.POST['program_name'] == "" and request.POST['search_duration'] == 'Any' and 'city' not in request.POST and 'interest' not in request.POST:
         allPrograms, allPrograms['programs'] = {}, tables.scanPrograms()
         allPrograms['cities'], allPrograms['interests'] = cities, tables.getInterests()
 
@@ -534,7 +550,10 @@ def createOrganization(request):
 @login_required(login_url = login_url)
 def searchOrganization(request):
   if request.method == 'GET':
-    return render(request, 'wkit/Organizations/searchOrganization.html', {})
+    paginator = tables.queryOrganizations(2, "")
+    h, h['organizations'] = {}, paginator.getPage(0)
+    request.session['paginator'] = json.dumps(vars(paginator))
+    return render(request, 'wkit/Organizations/searchOrganization.html', h)
   else:
     if 'search_entry' in request.POST:
       if request.POST['search_entry'] != "":
@@ -732,26 +751,22 @@ def viewGraph(request):
 
 @login_required(login_url = login_url)
 def downloadGraph(request):
-  if request.method == 'GET':
-    return render(request, 'wkit/Graphs/downloadGraph.html', {})
-  else:
-    if 'interest' in request.POST:
-      print('request.POST is: ', request.POST)
-      tables.deleteInterest(request.POST['interest'])
-      return HttpResponse(status=204)
+  import mimetypes
+  import os
+  from django.http.response import HttpResponse
 
-    if request.POST['search_entry'] != "":
-      allInterests, allInterests['interests'] = {}, tables.queryInterests(request.POST['search_entry'])
-      return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-    else:
-      allInterests, allInterests['interests'] = {}, tables.queryInterests('')
-      return render(request, 'wkit/Interests/searchInterest.html', allInterests)
+  tables.updateCSV()
+  
+  BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  filename = "file.csv"
+  filepath = BASE_DIR + '/' + filename
+  path = open(filepath, 'r')
+  mime_type, _ = mimetypes.guess_type(filepath)
+  response = HttpResponse(path, content_type=mime_type)
+  response['Content-Disposition'] = "attachment; filename=%s" % filename
+  return response
 
-
-
-
-
-
+  return render(request, 'wkit/Graphs/downloadGraph.html', {})
 
 def logout(request):
   return redirect('/admin/logout/')
