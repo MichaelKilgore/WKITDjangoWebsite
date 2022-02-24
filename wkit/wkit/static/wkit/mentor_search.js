@@ -14,10 +14,12 @@ function mentorNextPage() {
   })	
   .then(response => response.json())
 	.then(data => {
-    if (data.students.length > 0) { 
+    if (data.mentors.length > 0) { 
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;
     }
+    document.getElementById('prev_page').disabled = num < 1;
+    document.getElementById('next_page').disabled = !data.hasNext;
 
     //for (var i=0;mentor=data.mentors[i];i++) {
     table = document.getElementById('mentor-search-table');
@@ -34,9 +36,9 @@ function mentorNextPage() {
       var secondCell = newRow.insertCell();
       var thirdCell = newRow.insertCell();
 
-      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].first_name + " " + data.students[i].last_name + "</a>";
-      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].phone_number + "</a>";
-      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].email + "</a>";
+      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].first_name + " " + data.mentors[i].last_name + "</a>";
+      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].phone_number + "</a>";
+      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].email + "</a>";
     }
 
 	});
@@ -45,7 +47,7 @@ function mentorNextPage() {
 
 function mentorLastPage() {
   var num = document.getElementById('page_num').innerHTML;
-  if (parseInt(num) > 0) {
+  if (parseInt(num) > 1) {
     fetch('', {
       method: 'POST',
       headers: {
@@ -60,10 +62,12 @@ function mentorLastPage() {
     .then(response => response.json())
     .then(data => {
       
-      if (parseInt(num) > 0) { 
+      if (parseInt(num) > 1) { 
         num  = (parseInt(num)-1);
         document.getElementById('page_num').innerHTML = num;
       }
+      document.getElementById('prev_page').disabled = num <= 1;
+      document.getElementById('next_page').disabled = !data.hasNext;
       
       table = document.getElementById('mentor-search-table');
       var i=0;
@@ -79,12 +83,11 @@ function mentorLastPage() {
         var secondCell = newRow.insertCell();
         var thirdCell = newRow.insertCell();
 
-        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].first_name + " " + data.students[i].last_name + "</a>";
-        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].phone_number + "</a>";
-        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.students[i].id + "\">" + data.students[i].email + "</a>";
+        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].first_name + " " + data.mentors[i].last_name + "</a>";
+        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].phone_number + "</a>";
+        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].email + "</a>";
       }
 
     });
   }
-
 }

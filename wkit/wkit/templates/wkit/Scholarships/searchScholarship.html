@@ -6,34 +6,36 @@
 
 <h1>Search Scholarships</h1>
 
-<form style="background-color:#E6E6FA; padding: 10px;" method="post">
+<form id="ScholarshipForm" style="background-color:#E6E6FA; padding: 10px;" method="post">
 {% csrf_token %}
+
+<input type="hidden" name="search_type" value="scholarship">
 
 <table style="width:100%">
 
 	<tr>
 	<td>
 	<label for="search-type">Name: </label>
-	<input id="search-entry" type="text" name="name">
+  <input id="search-entry" type="text" name="name" value="{{request.POST.name}}">
 	</td>
 
 	<td>
 	<label for="search-type">Minimum Amount: </label>
-	<input id="search-entry" type="text" pattern="[0-9]+" name="min_amount">
+  <input id="search-entry" type="text" pattern="[0-9]+" name="min_amount" value="{{request.POST.min_amount}}">
 	</td>
 
 	<td>
 	<label for="search-type">Maximum Amount: </label>
-	<input id="search-entry" type="text" pattern="[0-9]+" name="max_amount">
+  <input id="search-entry" type="text" pattern="[0-9]+" name="max_amount" value="{{request.POST.max_amount}}">
 	</td>
 
 	<td>
 	<label for="search-type">Type: </label>
 	</td>
 	<td>
-	<input type="radio" value="no_preference" name="type" checked> No Preference<br>
-	<input type="radio" value="Internal" name="type"> Internal<br>
-	<input type="radio" value="External" name="type"> External<br>
+    <input type="radio" value="no_preference" name="type" {% if request.POST.type == None or request.POST.type == "no_preference" %}checked{% endif %}>No Preference<br>
+    <input type="radio" value="Internal" name="type" {%if request.POST.type == "Internal" %}checked{% endif %}>Internal<br>
+    <input type="radio" value="External" name="type" {%if request.POST.type == "External" %}checked{% endif %}>External<br>
 	</td>
 	</tr>
 
@@ -47,11 +49,13 @@
 <table id="scholarship-search-table" class="search-table">
   <tr>
     <th>Scholarship Name</th>
+		<th>Scholarship Type</th>
 		<th>Amount</th>
   </tr>
 	{% for scholarship in scholarships %}
   <tr id="{{ scholarship.id }}">
     <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.scholarship_name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.type }}</a></td>
     <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">${{ scholarship.amount }}</a></td>
   </tr>
 	{% endfor %}
@@ -60,9 +64,9 @@
 
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="scholarshipLastPage()")>&larr;</button>
-   <span id="page_num">0</span>
-  <button onClick="scholarshipNextPage()")>&rarr;</button>
+  <button id="prev_page" onClick="scholarshipLastPage()" {% if pageNum < 1 %}disabled{% endif %}>&larr;</button>
+  <span id="page_num">1</span>
+  <button id="next_page" onClick="scholarshipNextPage()" {% if not hasNext %} disabled{% endif %}>&rarr;</button>
 </div>
 <br>
 <br>

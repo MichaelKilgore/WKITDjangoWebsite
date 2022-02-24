@@ -11,12 +11,12 @@
 
 	<label for="search-type">Search by: </label>
 	<select id="search_type" name="search_type">
-		<option value="Name">Name</option>	
-		<option value="City">City</option>
-		<option value="full_scan">Full Scan</option>
+		<option value="Name" {% if request.POST.search_type == "Name" %}selected{% endif %}>Name</option>
+		<option value="City" {% if request.POST.search_type == "City" %}selected{% endif %}>City</option>
+		<option value="full_scan" {% if request.POST.search_type == "full_scan" %}selected{% endif %}>Full Scan</option>
 	</select>
 
-	<input id="search_entry" type="text" name="search_entry" value="{{ search_entry }}">
+	<input id="search_entry" type="text" name="search_entry" value="{{request.POST.search_entry}}">
 	<input type="submit" value="Search" />
 	<br>
 </form>
@@ -28,7 +28,7 @@
   </tr>
 	{% for organization in organizations %}
   <tr>
-    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.name }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.organization_name }}</a></td>
     <td><a style="text-decoration:none" href="{% url 'organization/profile' id=organization.id %}">{{ organization.city }}</a></td>
   </tr>
 	{% endfor %}
@@ -38,9 +38,9 @@
 
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="lastPage()")>&larr;</button>
-   <span id="page_num">0</span>
-  <button onClick="nextPage()")>&rarr;</button>
+  <button id="prev_page" onClick="lastPage()" {% if pageNum < 1 %}disabled{% endif %}>&larr;</button>
+   <span id="page_num">1</span>
+  <button id="next_page" onClick="nextPage()" {% if not hasNext %} disabled{% endif %}>&rarr;</button>
 </div>
 <br>
 <br>

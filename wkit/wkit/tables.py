@@ -1,7 +1,7 @@
 import boto3
 from boto3.dynamodb.conditions import Key
 import asyncio
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import And, Attr
 from datetime import date
 from wkit.var import cities, schools, assessments, school_districts
 
@@ -17,51 +17,72 @@ class Paginator:
     else:
       self.pages = []
 
-  def getPage(self, page_num):
+
+  def getPage(self, page_num, items_label):
+    print(f"getPage({page_num}) - len(self.pages)={len(self.pages)}")
     if page_num >= len(self.pages):
       self.advanceToPage(page_num)
 
-    return self.pages[page_num]['Items'] if self.existsPage(page_num) else None
+    if not self.existsPage(page_num):
+      return None
+
+    page = self.pages[page_num]
+    lastEvaluatedKey = page["LastEvaluatedKey"] if "LastEvaluatedKey" in page else None
+    res = {
+        "pageNum": page_num,
+        "LastEvaluatedKey": lastEvaluatedKey,
+        "hasNext": lastEvaluatedKey is not None,
+    }
+    if items_label is None:
+      items_label = "items"
+    res[items_label] = page["Items"]
+    return res
+
 
   def existsPage(self, page_num):
     self.advanceToPage(page_num)
-    return len(self.pages) >= page_num
+    return len(self.pages) > page_num
 
   def advanceToPage(self, page_num):
     while (page_num >= len(self.pages)):
       if len(self.pages) == 0:
         self.pages.append(self.nextPage(None))
       else:
-        token = self.pages[-1]['LastEvaluatedKey']
+        token =  self.pages[-1]["LastEvaluatedKey"] if "LastEvaluatedKey" in self.pages[-1] else None
         if not token:
-          return
+          break
         self.pages.append(self.nextPage(token))
 
   def nextPage(self, token):
-    print(f"loading page {len(self.pages)}: {token}")
+    page = {
+        "Items": [],
+    }
+    while True:
+      batch = self.nextBatch(token)
+      page["Items"] += batch["Items"]
+      token = batch["LastEvaluatedKey"]
+      print(f"loaded: {len(batch['Items'])} token={token}")
+      if not token or len(page["Items"]) > self.page_size / 2:
+        break
+    page["LastEvaluatedKey"] = token
+    return page
+
+  def nextBatch(self, token):
+    print(f"loading batch from db: len(pages)={len(self.pages)}: token={token}")
     kwargs = self.kwargs.copy()
     kwargs['Limit'] = self.page_size
     if token:
       kwargs['ExclusiveStartKey'] = token
-    #  rsp = self.table.scan(**kwargs)
-    #    Limit=self.page_size,
-    #    ExclusiveStartKey=token,
-    #  )
-    #else:
-    #  rsp = self.table.scan(Limit=self.page_size)
     dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
     table = dynamodb.Table(self.table_name)
 
+    print(f"table.scan kwargs={kwargs}")
     rsp = table.scan(**kwargs)
-    #rsp = self.aws_pag.paginate(
-    #  TableName=self.table_name,
-    #  PaginationConfig = {
-    #    'MaxItems': self.page_size,
-    #    'PageSize': self.page_size,
-    #    # 'StartingToken': token,
-    #  },
-    #)
-    return rsp
+    return {
+      'TableName': self.table_name,
+      "Items": rsp["Items"],
+      "LastEvaluatedKey": rsp["LastEvaluatedKey"] if "LastEvaluatedKey" in rsp else None
+    }
 
 
 def getInterests():
@@ -242,18 +263,20 @@ def getAllStudents():
 def queryStudents(search_type, search_entry):
   print(f"search on {search_entry}")
 
-  if search_type == 0: #search by email
-    return Paginator('wkit_student_table', 10, {
-      'IndexName': 'email-index',
+  if search_type == 'name': #search by name
+    return Paginator('wkit_student_table', 20, {
+      'FilterExpression': Attr('first_name').contains(search_entry) | Attr('last_name').contains(search_entry)
+    })
+  elif search_type == 'email': #search by email
+    return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('email').contains(search_entry),
     })
-  elif search_type == 1: #search by phone number
-    return Paginator('wkit_student_table', 10, {
-      'IndexName': 'phone_number-index',
+  elif search_type == 'phone_number': #search by phone number
+    return Paginator('wkit_student_table', 20, {
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator('wkit_student_table', 10)
+    return Paginator('wkit_student_table', 20)
 
 async def convertStudent(id):
   #get student info
@@ -397,18 +420,22 @@ def queryMentors(search_type, search_entry):
   table = dynamodb.Table('wkit_mentor_table')
   print(f"search mentors on {search_entry}")
 
-  if search_type == 0: #search by email
-    return Paginator('wkit_mentor_table', 10, {
+  if search_type == 'name': #search by name
+    return Paginator('wkit_mentor_table', 20, {
+      'FilterExpression': Attr('first_name').contains(search_entry) | Attr('last_name').contains(search_entry)
+    })
+  elif search_type == 'email': #search by email
+    return Paginator('wkit_mentor_table', 20, {
       'IndexName': 'email-index',
       'FilterExpression': Attr('email').contains(search_entry),
     })
-  elif search_type == 1: #search by phone number
-    return Paginator('wkit_mentor_table', 10, {
+  elif search_type == 'phone_number': #search by phone number
+    return Paginator('wkit_mentor_table', 20, {
       'IndexName': 'phone_number-index',
       'FilterExpression': Attr('phone_number').contains(search_entry),
     })
   else: #full scan
-    return Paginator('wkit_mentor_table', 10)
+    return Paginator('wkit_mentor_table', 20)
 
 def deleteMentor(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -627,25 +654,18 @@ def getOrganization(id):
     return {}
 
 def queryOrganizations(search_type, search_entry):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_organization_table')
+  if search_type == 'Name': #search by name
+    return Paginator('wkit_organization_table', 10, {
+      'FilterExpression': Attr('organization_name').contains(search_entry),
+    })
 
-  if search_type == 0: #search by name
-    resp = table.query(
-      IndexName='name-index',
-      KeyConditionExpression=Key('name').eq(search_entry)
-    )
-    return resp['Items']
-  elif search_type == 1: #search by city
-    resp = table.query(
-      IndexName='city-index',
-      KeyConditionExpression=Key('city').eq(search_entry)
-    )
-    return resp['Items']
+  elif search_type == 'City': #search by city
+    return Paginator('wkit_organization_table', 10, {
+      'FilterExpression': Attr('city').contains(search_entry),
+    })
   else: #full scan
     return Paginator('wkit_organization_table', 10)
-    #resp = table.scan()
-    #return resp['Items']
+
 
 def updateOrganization(id, organization):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
@@ -695,17 +715,9 @@ async def insertInterest(interest):
   return response
 
 
-def queryInterests(interest):
-  """dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_interest_table')"""
-  
-  if (interest != ""):
-    """response = table.query(
-      KeyConditionExpression=Key('interest').eq(interest)
-    )
-    
-    return response['Items']"""
-
+def queryInterests(search_type, interest):
+  if (interest is not None and interest != ""):
+    print(f"searching interests: interest={interest}")
     return Paginator('wkit_interest_table', 10, {
       'FilterExpression': Attr('interest').contains(interest),
     })
@@ -737,79 +749,46 @@ async def insertScholarship(scholarship, id):
   )
   return response
 
+
+def addClause(expr, clause):
+  if expr is None:
+    return clause
+  return expr & clause
+
 def queryScholarships(id, name, min_amount, max_amount, scholarship_type):
-  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
-  table = dynamodb.Table('wkit_scholarship_table')
+  """
+    # get off limit keys  
+    off_limits = {}
+    if id != 'foo':
+      student = getStudent(id)
+      if 'scholarships' in student: 
+        for key in student['scholarships']:
+          off_limits[key] = True
+  """
+  expr = None
+  if name is not None and name != "":
+    expr = addClause(expr, Attr('scholarship_name').contains(name))
+  if min_amount is not None and min_amount != "":
+    try:
+      imin = int(min_amount)
+      expr = addClause(expr, Attr('amount').gte(imin))
+    except:
+      print(f"min_amount string should represent a numeric value: {min_amount}")
+  if max_amount is not None and max_amount != "":
+    try:
+      imax = int(max_amount)
+      expr = addClause(expr, Attr('amount').lte(imax))
+    except:
+      print(f"max_amount string should represent a numeric value: {max_amount}")
+  if scholarship_type is not None and scholarship_type != "no_preference":
+      expr = addClause(expr, Attr('type').eq(scholarship_type))
 
+  if expr is not None:
+    query_params = { 'FilterExpression': expr }
+    return Paginator('wkit_scholarship_table', 10, query_params)
 
-  # get off limit keys  
-  off_limits = {}
-  if id != 'foo':
-    student = getStudent(id)
-    if 'scholarships' in student: 
-      for key in student['scholarships']:
-        off_limits[key] = True
+  return Paginator('wkit_scholarship_table', 10)
 
-  if name == "" and min_amount == "" and max_amount == "" and scholarship_type=='no_preference':
-    response = table.scan()
-
-    ans = response['Items']
-    return_ans = []
-
-    for item in ans:
-      if item['id'] not in off_limits:
-        return_ans.append(item)
-    
-    return return_ans
-  else:
-    if min_amount == "":
-      min_amount = "0"
-    if max_amount == "":
-      max_amount = "999999999999999999"
-
-    ans = {}
-    if scholarship_type=='no_preference': #just by name
-      resp = table.scan()
-  
-      for val in resp['Items']:
-        if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-          if val['name'] == name:
-            ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-      
-      return return_ans
-    elif name=="": #just by type
-      resp = table.scan()
-
-      if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-        if val['type'] == scholarship_type:
-          ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-      
-      return return_ans
-    else: #both
-      if val['amount'] <= int(max_amount) and val['amount'] >= int(min_amount):
-        if val['type'] == scholarship_type and val['name'] == name:
-          ans.append(val)
-
-      return_ans = []
-
-      for item in ans:
-        if item['id'] not in off_limits:
-          return_ans.append(item)
-  
-      return return_ans
-  
 def deleteScholarship(id):
   dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
   response = table.delete_item(
@@ -948,11 +927,3 @@ def updateCSV():
       writer.writerow(row)
 
   
-
-
-
-
-
-
-
-

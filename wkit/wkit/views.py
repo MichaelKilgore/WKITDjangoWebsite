@@ -8,6 +8,7 @@ import datetime
 from django.http import HttpResponse
 from django.http import JsonResponse
 import json
+import jsonpickle
 
 from wkit.var import cities, schools, assessments, school_districts
 import wkit.tables as tables
@@ -38,47 +39,44 @@ def createStudent(request):
   else:
     return HttpResponseRedirect('/')
 
-@login_required(login_url = login_url)
-def searchStudent(request, key=None):
+
+def nextOrPrevPage(request, items_label, direction):
+  paginator = jsonpickle.decode(request.session["paginator"])
+  model_current_page = int(request.POST['current_page']) - 1
+  pageToGet = model_current_page + 1 if direction == 'forward' else model_current_page - 1
+  if pageToGet < 0 or not paginator.existsPage(pageToGet):
+    print(f"FAIL - no page {pageToGet} - why was button enabled?")
+    return JsonResponse({})
+  else:
+    data = paginator.getPage(pageToGet, items_label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
+    return JsonResponse(data)
+
+def doSimpleSearch(request, fetch_func, items_label, uri):
+  print(f"request = {request}: request.POST={request.POST}")
   if request.method == 'GET':
-    paginator = tables.queryStudents(2, None)
-    allStudents, allStudents['students'] = {}, paginator.getPage(0)
-    request.session['paginator'] = json.dumps(vars(paginator))
-    return render(request, 'wkit/Students/searchStudent.html', allStudents)
+    paginator = fetch_func('full_scan', None)
+    data = paginator.getPage(0, items_label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
+    return render(request, uri, data)
   else:
     if 'search_type' in request.POST:
-      if request.POST['search_type'] == 'email':
-        paginator = tables.queryStudents(0, request.POST['search_entry'])
-        allStudents, allStudents['students'] = {}, paginator.getPage(0)
-        request.session['paginator'] = json.dumps(vars(paginator))
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
-      elif request.POST['search_type'] == 'phone_number':
-        paginator = tables.queryStudents(1, request.POST['search_entry'])
-        allStudents, allStudents['students'] = {}, paginator.getPage(0)
-        request.session['paginator'] = json.dumps(vars(paginator))
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
-      else:
-        paginator = tables.queryStudents(2, request.POST['search_entry'])
-        allStudents, allStudents['students'] = {}, paginator.getPage(0)
-        request.session['paginator'] = json.dumps(vars(paginator))
-        return render(request, 'wkit/Students/searchStudent.html', allStudents)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allStudents)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allStudents)
+      search_type = request.POST['search_type']
+      paginator = fetch_func(search_type, request.POST['search_entry'])
+      data = paginator.getPage(0, items_label)
+      request.session['paginator'] = jsonpickle.encode(paginator)
+      return render(request, uri, data)
+    elif 'action' in request.POST and request.POST['action'] == 'next_page':
+      return nextOrPrevPage(request, items_label, 'forward')
 
-      return JsonResponse({})
+    elif 'action' in request.POST and request.POST['action'] == 'prev_page':
+      return nextOrPrevPage(request, items_label, 'backward')
     else:
       return JsonResponse({})
 
-  
+@login_required(login_url = login_url)
+def searchStudent(request, key=None):
+  return doSimpleSearch(request, tables.queryStudents, "students", 'wkit/Students/searchStudent.html')
 
 
 @login_required(login_url = login_url)
@@ -167,32 +165,23 @@ def studentProfile(request, id):
 
       return HttpResponse(status=204)
     elif 'get_mentors' in request.POST: #search for mentors
+      label = "mentors"
       if request.POST['search_entry'] != "":
-        if request.POST['search_type'] == 'email':
-          paginator = tables.queryMentors(0, request.POST['search_entry'])
-          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-          request.session['mentor_paginator'] = json.dumps(vars(paginator))
-          return JsonResponse(allMentors)
-        elif request.POST['search_type'] == 'phone_number':
-          paginator = tables.queryMentors(1, request.POST['search_entry'])
-          allMentors, allMentors['mentors'] = {}, paginat.getPage(0)
-          request.session['mentor_paginator'] = json.dumps(vars(paginator))
-          return JsonResponse(allMentors)
-        else:
-          paginator = tables.queryMentors(2, request.POST['search_entry'])
-          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-          request.session['mentor_paginator'] = json.dumps(vars(paginator))
-          return JsonResponse(allMentors)
+        search_type = request.POST['search_type']
+        paginator = tables.queryMentors(search_type, request.POST['search_entry'])
+        data = paginator.getPage(0, label)
+        request.session['mentor_paginator'] = jsonpickle.encode(paginator)
+        return JsonResponse(data)
       else:
         if request.POST['search_type'] != 'full_scan':
-          allMentors, allMentors['mentors'] = {}, []
-          return JsonResponse(allMentors)
+          data = { 'items': [] }
+          return JsonResponse(data)
         else:
-          paginator = tables.queryMentors(2, request.POST['search_entry'])
-          allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-          request.session['mentor_paginator'] = json.dumps(vars(paginator))
-          return JsonResponse(allMentors)
-      request.session['paginator'] = paginator
+          paginator = tables.queryMentors('full_scan', request.POST['search_entry'])
+          data = paginator.getPage(0, label)
+          request.session['mentor_paginator'] = jsonpickle.encode(paginator)
+          return JsonResponse(data)
+      request.session['mentor_paginator'] = paginator
     elif 'pair_mentor' in request.POST: #pair mentor to user
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)
@@ -292,49 +281,7 @@ def createMentor(request):
 
 @login_required(login_url = login_url)
 def searchMentor(request, key=None):
-  if request.method == 'GET':
-    paginator = tables.queryMentors(2, None)
-    allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-    request.session['paginator'] = json.dumps(vars(paginator))
-    return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-  else:
-    if request.POST['search_entry'] != "":
-      if request.POST['search_type'] == 'email':
-        paginator = tables.queryMentors(0, request.POST['search_entry'])
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-        return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-      elif request.POST['search_type'] == 'phone_number':
-        paginator = tables.queryMentors(1, request.POST['search_entry'])
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-        return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-      else:
-        paginator = tables.queryMentors(2, request.POST['search_entry'])
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-        return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-    elif 'search_type' in request.POST:
-      if request.POST['search_type'] != 'full_scan':
-        return render(request, 'wkit/Mentors/searchMentor.html', {})
-      else:
-        paginator = tables.queryMentors(2, request.POST['search_entry'])
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(0)
-        return render(request, 'wkit/Mentors/searchMentor.html', allMentors)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allMentors)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allMentors)
-
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
-
-
+  return doSimpleSearch(request, tables.queryMentors, "mentors", 'wkit/Mentors/searchMentor.html')
 
 
 @login_required(login_url = login_url)
@@ -422,9 +369,6 @@ def mentorProfile(request, id):
       return JsonResponse({})
     else:
       return JsonResponse({})
-
-
-
 
 
 
@@ -547,44 +491,10 @@ def createOrganization(request):
   else:
     return HttpResponseRedirect('/')
 
+
 @login_required(login_url = login_url)
 def searchOrganization(request):
-  if request.method == 'GET':
-    paginator = tables.queryOrganizations(2, "")
-    h, h['organizations'] = {}, paginator.getPage(0)
-    request.session['paginator'] = json.dumps(vars(paginator))
-    return render(request, 'wkit/Organizations/searchOrganization.html', h)
-  else:
-    if 'search_entry' in request.POST:
-      if request.POST['search_entry'] != "":
-        if request.POST['search_type'] == 'Name':
-          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(0, request.POST['search_entry'])
-          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
-        else:
-          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(1, request.POST['search_entry'])
-          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
-      else:
-        if request.POST['search_type'] != 'full_scan':
-          return render(request, 'wkit/Organizations/searchOrganization.html', {})
-        else:
-          allOrganizations, allOrganizations['organizations'] = {}, tables.queryOrganizations(2, request.POST['search_entry'])
-          return render(request, 'wkit/Organizations/searchOrganization.html', allOrganizations)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allOrganizations, allOrganizations['organizations'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allOrganizations)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allOrganizations, allOrganizations['organizations'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allOrganizations)
-
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
-
+  return doSimpleSearch(request, tables.queryOrganizations, "organizations", 'wkit/Organizations/searchOrganization.html')
 
 
 @login_required(login_url = login_url)
@@ -631,38 +541,7 @@ def createInterest(request):
 
 @login_required(login_url = login_url)
 def searchInterest(request):
-  if request.method == 'GET':
-    paginator = tables.queryInterests('')
-    allInterests, allInterests['interests'] = {}, paginator.getPage(0)
-    request.session['paginator'] = json.dumps(vars(paginator))
-    return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-  else: 
-    if 'interest' in request.POST:
-      print('request.POST is: ', request.POST)
-      tables.deleteInterest(request.POST['interest'])
-      return HttpResponse(status=204)
-
-    if 'search_entry' in request.POST:
-      if request.POST['search_entry'] != "":
-        allInterests, allInterests['interests'] = {}, tables.queryInterests(request.POST['search_entry'])
-        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-      else:
-        allInterests, allInterests['interests'] = {}, tables.queryInterests('')
-        return render(request, 'wkit/Interests/searchInterest.html', allInterests)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allStudents)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allInterests, allInterests['interests'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allInterests)
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
+  return doSimpleSearch(request, tables.queryInterests, "interests", 'wkit/Interests/searchInterest.html')
 
 
 @login_required(login_url = login_url)
@@ -691,26 +570,27 @@ def createScholarship(request):
 
 @login_required(login_url = login_url)
 def searchScholarship(request):
+  items_label = "scholarships"
   if request.method == 'GET':
-    return render(request, 'wkit/Scholarships/searchScholarship.html', {})
+    paginator = tables.queryScholarships('foo', None, None, None, None)
+    data = paginator.getPage(0, items_label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
+    return render(request, 'wkit/Scholarships/searchScholarship.html', data)
+  elif 'search_type' in request.POST:
+      print(f"searching for name={request.POST['name']}")
+      paginator = tables.queryScholarships(
+        'foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type']
+      )
+      data = paginator.getPage(0, items_label)
+      request.session['paginator'] = jsonpickle.encode(paginator)
+      return render(request, 'wkit/Scholarships/searchScholarship.html', data)
+  elif 'action' in request.POST and request.POST['action'] == 'next_page':
+    return nextOrPrevPage(request, items_label, 'forward')
+
+  elif 'action' in request.POST and request.POST['action'] == 'prev_page':
+    return nextOrPrevPage(request, items_label, 'backward')
   else:
-    if 'name' in request.POST:
-      allScholarships, allScholarships['scholarships'] = {}, tables.queryScholarships('foo', request.POST['name'], request.POST['min_amount'], request.POST['max_amount'], request.POST['type'])
-      return render(request, 'wkit/Scholarships/searchScholarship.html', allScholarships)
-    elif 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allStudents)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allStudents, allStudents['students'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allStudents)
-      return JsonResponse({})
-    else:
-      return JsonResponse({})
+    return JsonResponse({})
 
 
 
@@ -765,8 +645,7 @@ def downloadGraph(request):
   response = HttpResponse(path, content_type=mime_type)
   response['Content-Disposition'] = "attachment; filename=%s" % filename
   return response
-
-  return render(request, 'wkit/Graphs/downloadGraph.html', {})
+  #return render(request, 'wkit/Graphs/downloadGraph.html', {})
 
 def logout(request):
   return redirect('/admin/logout/')
@@ -776,12 +655,6 @@ def logout(request):
 @login_required(login_url = login_url)
 def index(request):
   return render(request, 'wkit/index.html', {})
-
-
-
-
-
-
 
 
 
