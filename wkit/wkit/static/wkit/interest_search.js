@@ -14,7 +14,7 @@ function nextPage() {
   })	
   .then(response => response.json())
 	.then(data => {
-    if (data.students.length > 0) { 
+    if (data.interests.length > 0) { 
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;
     }
@@ -97,6 +97,7 @@ function deleteInterest(interest) {
 				'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
 			},
 			body: new URLSearchParams({
+        'delete': 'interest',
         'interest': interest
     	})
 		})

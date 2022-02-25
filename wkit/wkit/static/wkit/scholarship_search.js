@@ -36,8 +36,8 @@ function scholarshipNextPage() {
       var thirdCell = newRow.insertCell();
 
       firstCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].scholarship_name + "</a>";
-      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].type + "</a>";
-      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].amount + "</a>";
+      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].scholarship_type + "</a>";
+      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">$" + data.scholarships[i].amount + "</a>";
    }
 	});
 
@@ -82,8 +82,8 @@ function scholarshipLastPage() {
         var thirdCell = newRow.insertCell();
 
         firstCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].scholarship_name + "</a>";
-        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].type + "</a>";
-        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].amount + "</a>";
+        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">" + data.scholarships[i].scholarship_type + "</a>";
+        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/scholarship/profile/" + data.scholarships[i].id + "\">$" + data.scholarships[i].amount + "</a>";
       }
 
     });

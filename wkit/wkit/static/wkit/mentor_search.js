@@ -8,8 +8,8 @@ function mentorNextPage() {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
     body: new URLSearchParams({
-      'next_page': num,
-      'mentor': true,
+      'action': 'next_page',
+      'current_page': num,
     })
   })	
   .then(response => response.json())
@@ -55,8 +55,8 @@ function mentorLastPage() {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
       },
       body: new URLSearchParams({
-        'last_page': num,
-        'mentor': true,
+        'action': 'prev_page',
+        'current_page': num,
       })
     })	
     .then(response => response.json())

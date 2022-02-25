@@ -743,7 +743,7 @@ async def insertScholarship(scholarship, id):
       'id': id,
       'scholarship_name': scholarship['scholarship_name'],
       'amount': int(scholarship['amount']),
-      'type': scholarship['type'],
+      'scholarship_type': scholarship['type'],
       'notes': scholarship['notes']
     }
   )

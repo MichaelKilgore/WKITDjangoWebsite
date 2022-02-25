@@ -14,7 +14,7 @@ function programNextPage() {
   })	
   .then(response => response.json())
 	.then(data => {
-    if (data.students.length > 0) { 
+    if (data.programs.length > 0) { 
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;
     }
@@ -34,9 +34,9 @@ function programNextPage() {
       var secondCell = newRow.insertCell();
       var thirdCell = newRow.insertCell();
 
-      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].first_name + " " + data.students[i].last_name + "</a";
-      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].phone_number + "</a";
-      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].email + "</a";
+      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].program_name + "</a";
+      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].city + "</a";
+      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].interest + "</a";
     }
 
 	});
@@ -79,9 +79,9 @@ function programLastPage() {
         var secondCell = newRow.insertCell();
         var thirdCell = newRow.insertCell();
 
-        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].first_name + " " + data.students[i].last_name + "</a";
-        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].phone_number + "</a";
-        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.students[i].id + "\">" + data.students[i].email + "</a";
+        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].program_name + "</a";
+        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].city + "</a";
+        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/program/profile/" + data.programs[i].id + "\">" + data.programs[i].interest + "</a";
       }
 
     });

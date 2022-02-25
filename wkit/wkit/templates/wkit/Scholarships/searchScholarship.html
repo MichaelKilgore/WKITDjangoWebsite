@@ -55,7 +55,7 @@
 	{% for scholarship in scholarships %}
   <tr id="{{ scholarship.id }}">
     <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.scholarship_name }}</a></td>
-    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.type }}</a></td>
+    <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">{{ scholarship.scholarship_type }}</a></td>
     <td><a style="text-decoration:none" href="{% url 'scholarship/profile' id=scholarship.id %}">${{ scholarship.amount }}</a></td>
   </tr>
 	{% endfor %}

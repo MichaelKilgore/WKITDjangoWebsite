@@ -70,7 +70,7 @@
   </tr>
 	{% for program in programs %}
 		<tr>
-			<td><a style="text-decoration:none" href="{% url 'program/profile' id=program.id %}">{{ program.name }}</a></td>
+			<td><a style="text-decoration:none" href="{% url 'program/profile' id=program.id %}">{{ program.program_name }}</a></td>
 			<td><a style="text-decoration:none" href="{% url 'program/profile' id=program.id %}">{{ program.city }}</a></td> 
 			<td><a style="text-decoration:none" href="{% url 'program/profile' id=program.id %}">{{ program.interest }}</a></td>
 		</tr>

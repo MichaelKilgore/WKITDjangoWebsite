@@ -71,6 +71,12 @@ def doSimpleSearch(request, fetch_func, items_label, uri):
 
     elif 'action' in request.POST and request.POST['action'] == 'prev_page':
       return nextOrPrevPage(request, items_label, 'backward')
+    elif 'delete' in request.POST:
+      tables.deleteInterest(request.POST['interest'])
+      paginator = fetch_func('full_scan', None)
+      data = paginator.getPage(0, items_label)
+      request.session['paginator'] = jsonpickle.encode(paginator)
+      return render(request, uri, data)
     else:
       return JsonResponse({})
 
@@ -399,23 +405,58 @@ def createProgram(request):
 
 @login_required(login_url = login_url)
 def searchProgram(request):
+  label = 'programs'
   if request.method == 'GET':
     h, h['cities'], h['interests'] = {}, cities, tables.getInterests()
     paginator = tables.scanPrograms()
-    h['programs'] = paginator.getPage(0)
+    h['programs'] = paginator.getPage(0, label)['programs']
+
+    allOrganizations = tables.getOrganizations()
+    orgHash = {}
+
+    for org in allOrganizations:
+      orgHash[org['id']] = org['city']
+
+    for program in h['programs']:
+      if (orgHash[program['organizationID']]):
+        program['city'] = orgHash[program['organizationID']]
+
+    print('programs: ', h['programs'])
     request.session['paginator'] = json.dumps(vars(paginator))
     return render(request, 'wkit/Programs/searchProgram.html', h)
   else:
     if 'next_page' in request.POST:
       paginator_dict = json.loads(request.session['paginator'])
       paginator = tables.Paginator(**paginator_dict)
-      allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
+      allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['next_page'])+1, label)['programs']
+
+      allOrganizations = tables.getOrganizations()
+      orgHash = {}
+
+      for org in allOrganizations:
+        orgHash[org['id']] = org['city']
+
+      for program in allPrograms['programs']:
+        if (orgHash[program['organizationID']]):
+          program['city'] = orgHash[program['organizationID']]
+
       return JsonResponse(allPrograms)
     elif 'last_page' in request.POST:
       paginator_dict = json.loads(request.session['paginator'])
       paginator = tables.Paginator(**paginator_dict)
       if (int(request.POST['last_page'])-1 >= 0):
-        allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
+        allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['last_page'])-1, label)['programs']
+
+        allOrganizations = tables.getOrganizations()
+        orgHash = {}
+
+        for org in allOrganizations:
+          orgHash[org['id']] = org['city']
+
+        for program in allPrograms['programs']:
+          if (orgHash[program['organizationID']]):
+            program['city'] = orgHash[program['organizationID']]
+
         return JsonResponse(allPrograms)
 
       return JsonResponse({})
