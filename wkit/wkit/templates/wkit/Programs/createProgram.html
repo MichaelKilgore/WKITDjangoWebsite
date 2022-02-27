@@ -19,7 +19,7 @@
 		<label>Company/School Organization</label>
 		<select id="organization" name="organizationID" class="field-select">
 			{% for organization in organizations %}
-				<option value="{{ organization.id }}">{{ organization.name }}</option>
+				<option value="{{ organization.id }}">{{ organization.organization_name }}</option>
 			{% endfor %}
 		</select>
 	</li>

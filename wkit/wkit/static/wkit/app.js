@@ -443,6 +443,7 @@ function saveChanges() {
 		assessment: elements[9],
 		notes: elements[10]
 	}
+  alert("saveChanges data = " + data);
 
 	fetch("/student/update/", {
   	method: "POST",

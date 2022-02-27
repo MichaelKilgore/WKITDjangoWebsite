@@ -24,12 +24,12 @@
   <tr height=50>
     <td>Organization</td>
     <td>
-      <input class="nonEditMode" id="organization_name" name="organization_name" value="{{ organization.name }}" readonly>
+      <input class="nonEditMode" id="organization_name" name="organization_name" value="{{ organization.organization_name }}" readonly>
       <input type="hidden" id="organization_id" value="{{ organization.id }}" hidden>
 
 			<select id="newOrganization" name="organizationID" class="field-select" hidden>
 				{% for org in organizations %}
-					<option value="{{ org.id }}">{{ org.name }}</option>
+					<option value="{{ org.id }}">{{ org.organization_name }}</option>
 				{% endfor %}
 			</select>
 		</td> 
@@ -75,23 +75,22 @@
   <tr height=50>
     <td>Start Dates</td>
     <td>
-        <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>{{ program.notes }}</textarea>
+        <textarea rows="10" cols="60" class="enableEdit" name="start_dates" id="start_dates" class="field-long field-textarea" readonly>
+{{ program.start_dates }}</textarea>
     </td>
   </tr>
   <tr height=50>
     <td>Application Deadlines</td>
     <td>
-        <textarea rows="10" cols="60" class="enableEdit" name="application_deadlines" id="notes" class="field-long field-textarea" readonly>
-        {{ program.application_deadlines }}
-        </textarea>
+        <textarea rows="10" cols="60" class="enableEdit" name="application_deadlines" id="deadlines" class="field-long field-textarea" readonly>
+{{ program.application_deadlines }}</textarea>
     </td>
   </tr>
 	<tr height=50>
     <td>Notes</td>
     <td>
         <textarea rows="10" cols="60" class="enableEdit" name="notes" id="notes" class="field-long field-textarea" readonly>
-        {{ student.notes }}
-        </textarea>
+{{ program.notes }}</textarea>
     </td> 
   </tr>
 
@@ -101,7 +100,7 @@
 <button type="button" onClick="enableEdit()">Edit</button><br>
 </div>
 
-<input id="saveButton" onClick='saveChanges()' type="submit" value="save" hidden>
+<input id="saveButton" type="submit" value="save" hidden>
 <br>
 
 <button style="color: red">Delete Program</button>

@@ -3,6 +3,7 @@ from boto3.dynamodb.conditions import Key
 import asyncio
 from boto3.dynamodb.conditions import And, Attr
 from datetime import date
+import re
 from wkit.var import cities, schools, assessments, school_districts
 
 
@@ -568,6 +569,34 @@ async def insertProgram(program, id):
       'notes': program['notes'],
     }
   )
+  return response
+
+async def updateProgram(id, program):
+  dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
+  table = dynamodb.Table('wkit_program_table')
+
+  response = table.update_item(
+    Key={
+      'id': id
+    },
+    UpdateExpression=(
+      "set program_name=:a, organizationID=:b, phone_number=:c, email=:d, time_commitment=:e, interest=:f, "
+      "start_dates=:g, application_deadlines=:h, notes=:i"
+    ),
+    ExpressionAttributeValues={
+      ':a': program['program_name'],
+      ':b': program['organizationID'],
+      ':c': program['phone_number'],
+      ':d': program['email'],
+      ':e': program['time_commitment'],
+      ':f': program['interest'],
+      ':g': re.sub('^\s+', '', re.sub('\s+$', '', program['start_dates'])),
+      ':h': re.sub('^\s+', '', re.sub('\s+$', '', program['application_deadlines'])),
+      ':i': re.sub('^\s+', '', re.sub('\s+$', '', program['notes'])),
+    },
+    ReturnValues="UPDATED_NEW"
+  )
+
   return response
 
 def getProgram(id):

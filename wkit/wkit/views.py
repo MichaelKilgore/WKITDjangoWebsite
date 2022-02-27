@@ -387,6 +387,7 @@ def createProgram(request):
       return redirect('/program/profile/'+x, newProfile=z)
     else:
       h, h['organizations'], h['interests'] = {}, tables.getOrganizations(), tables.getInterests()
+      print(f"organizations = {h['organizations']}")
       return render(request, 'wkit/Programs/createProgram.html', h)
   else:
     return HttpResponseRedirect('/')
@@ -482,21 +483,22 @@ def programProfile(request, id):
 
     return render(request, 'wkit/Programs/programProfile.html', h)
   else:
-    if 'first_name' in request.POST: #edit mode
+    if 'program_name' in request.POST: #edit mode
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)
       loop = asyncio.get_event_loop()
       program_info = request.POST.copy()
+      print(f"program_info = {program_info}")
       loop.run_until_complete(tables.updateProgram(request.POST['id'], program_info))
 
       loop.close()
 
-      return redirect('/student/profile/'+z['student']['id'], newProfile={})
+      return redirect('/program/profile/'+id, newProfile={})
     else: #delete
       loop = asyncio.new_event_loop()
       asyncio.set_event_loop(loop)
       loop = asyncio.get_event_loop()
-      loop.run_until_complete(tables.deleteMentor(request.POST['id']))
+      loop.run_until_complete(tables.deleteProgram(request.POST['id']))
       loop.close()
 
       return HttpResponse(status=204)
