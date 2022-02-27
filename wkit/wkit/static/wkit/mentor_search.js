@@ -1,5 +1,5 @@
-function mentorNextPage() {
-  var num = document.getElementById('page_num').innerHTML;
+function mentorNextPage(student_id = null) {
+  var num = document.getElementById('mentors_page_num').innerHTML;
 
   fetch('', {
     method: 'POST',
@@ -16,7 +16,7 @@ function mentorNextPage() {
 	.then(data => {
     if (data.mentors.length > 0) { 
 	    num  = (parseInt(num)+1);
-      document.getElementById('page_num').innerHTML = num;
+      document.getElementById('mentors_page_num').innerHTML = num;
     }
     document.getElementById('prev_page').disabled = num < 1;
     document.getElementById('next_page').disabled = !data.hasNext;
@@ -30,23 +30,32 @@ function mentorNextPage() {
       i += 1;
     }
 
-    for (var i=0;i<data.mentors.length;i++) { 
-      var newRow = table.insertRow(1); 
+    for (var i=0;i<data.mentors.length;i++) {
+      var newRow = table.insertRow(-1);
       var firstCell = newRow.insertCell();
       var secondCell = newRow.insertCell();
       var thirdCell = newRow.insertCell();
+      var fourthCell = null;
+      if (student_id != null) {
+        fourthCell = newRow.insertCell();
+      }
 
-      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].first_name + " " + data.mentors[i].last_name + "</a>";
-      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].phone_number + "</a>";
-      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].email + "</a>";
+      var mentor = data.mentors[i];
+      var fullName = mentor.first_name + " " + mentor.last_name;
+      firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + fullName + "</a>";
+      secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + mentor.phone_number + "</a>";
+      thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + mentor.email + "</a>";
+      if (student_id != null) {
+        fourthCell.innerHTML = "<button onClick=\"pairMentor('"+ student_id + "', '"  + mentor.id + "', '" + fullName + "', '" + newRow.rowIndex + "')\">Pair</button>"; 
+      }
     }
 
 	});
 
 }
 
-function mentorLastPage() {
-  var num = document.getElementById('page_num').innerHTML;
+function mentorLastPage(student_id) {
+  var num = document.getElementById('mentors_page_num').innerHTML;
   if (parseInt(num) > 1) {
     fetch('', {
       method: 'POST',
@@ -64,7 +73,7 @@ function mentorLastPage() {
       
       if (parseInt(num) > 1) { 
         num  = (parseInt(num)-1);
-        document.getElementById('page_num').innerHTML = num;
+        document.getElementById('mentors_page_num').innerHTML = num;
       }
       document.getElementById('prev_page').disabled = num <= 1;
       document.getElementById('next_page').disabled = !data.hasNext;
@@ -77,15 +86,24 @@ function mentorLastPage() {
         i += 1;
       }
 
-      for (var i=0;i<data.mentors.length;i++) { 
-        var newRow = table.insertRow(1); 
+      for (var i=0;i<data.mentors.length;i++) {
+        var newRow = table.insertRow(-1);
         var firstCell = newRow.insertCell();
         var secondCell = newRow.insertCell();
         var thirdCell = newRow.insertCell();
+        var fourthCell = null;
+        if (student_id != null) {
+          fourthCell = newRow.insertCell();
+        }
 
-        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].first_name + " " + data.mentors[i].last_name + "</a>";
-        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].phone_number + "</a>";
-        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + data.mentors[i].id + "\">" + data.mentors[i].email + "</a>";
+        var mentor = data.mentors[i];
+        var fullName = mentor.first_name + " " + mentor.last_name;
+        firstCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + fullName + "</a>";
+        secondCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + mentor.phone_number + "</a>";
+        thirdCell.innerHTML = "<a style='text-decoration:none' href=\"/mentor/profile/" + mentor.id + "\">" + mentor.email + "</a>";
+        if (student_id != null) {
+          fourthCell.innerHTML = "<button onClick=\"pairMentor('"+ student_id + "', '"  + mentor.id + "', '" + fullName + "', '" + newRow.rowIndex + "')\">Pair</button>"; 
+        }
       }
 
     });

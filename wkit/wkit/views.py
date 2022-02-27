@@ -40,8 +40,8 @@ def createStudent(request):
     return HttpResponseRedirect('/')
 
 
-def nextOrPrevPage(request, items_label, direction):
-  paginator = jsonpickle.decode(request.session["paginator"])
+def nextOrPrevPage(request, items_label, direction, pagname = "paginator"):
+  paginator = jsonpickle.decode(request.session[pagname])
   model_current_page = int(request.POST['current_page']) - 1
   pageToGet = model_current_page + 1 if direction == 'forward' else model_current_page - 1
   if pageToGet < 0 or not paginator.existsPage(pageToGet):
@@ -49,7 +49,7 @@ def nextOrPrevPage(request, items_label, direction):
     return JsonResponse({})
   else:
     data = paginator.getPage(pageToGet, items_label)
-    request.session['paginator'] = jsonpickle.encode(paginator)
+    request.session[pagname] = jsonpickle.encode(paginator)
     return JsonResponse(data)
 
 def doSimpleSearch(request, fetch_func, items_label, uri):
@@ -122,6 +122,7 @@ def studentProfile(request, id):
     else:
       comparison = str(str(int(x[0]) + 1) + '-' + '06' + '-' + '30')
 
+    """
     dt = datetime.datetime.strptime(h['student']['grade'], '%Y-%m-%d').date()
 
     comparison = datetime.datetime.strptime(comparison, '%Y-%m-%d').date()
@@ -136,6 +137,7 @@ def studentProfile(request, id):
       h['student']['grade'] = '12'
     else:
       h['student']['grade'] = 'Graduated'
+    """
 
     h['student']['district'] = school_districts[h['student']['school']]
 
@@ -174,19 +176,15 @@ def studentProfile(request, id):
       label = "mentors"
       if request.POST['search_entry'] != "":
         search_type = request.POST['search_type']
-        paginator = tables.queryMentors(search_type, request.POST['search_entry'])
+        paginator = tables.queryMentors(search_type, request.POST['search_entry'], 10)
         data = paginator.getPage(0, label)
         request.session['mentor_paginator'] = jsonpickle.encode(paginator)
         return JsonResponse(data)
       else:
-        if request.POST['search_type'] != 'full_scan':
-          data = { 'items': [] }
-          return JsonResponse(data)
-        else:
-          paginator = tables.queryMentors('full_scan', request.POST['search_entry'])
-          data = paginator.getPage(0, label)
-          request.session['mentor_paginator'] = jsonpickle.encode(paginator)
-          return JsonResponse(data)
+        paginator = tables.queryMentors('full_scan', request.POST['search_entry'], 10)
+        data = paginator.getPage(0, label)
+        request.session['mentor_paginator'] = jsonpickle.encode(paginator)
+        return JsonResponse(data)
       request.session['mentor_paginator'] = paginator
     elif 'pair_mentor' in request.POST: #pair mentor to user
       loop = asyncio.new_event_loop()
@@ -221,18 +219,12 @@ def studentProfile(request, id):
         tables.appendScholarship(request.POST['id'], allScholarships)
 
       return HttpResponse(status=204)
-    elif 'mentor' in request.POST and 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['mentor_paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['next_page'])+1)
-      return JsonResponse(allMentors)
-    elif 'mentor' in request.POST and 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['mentor_paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allMentors, allMentors['mentors'] = {}, paginator.getPage(int(request.POST['last_page'])-1)
-        return JsonResponse(allMentors)
-      return JsonResponse({})
+    elif 'action' in request.POST and request.POST['action'] == 'next_page':
+      return nextOrPrevPage(request, "mentors", "forward", "mentor_paginator")
+
+    elif 'action' in request.POST and request.POST['action'] == 'prev_page':
+      return nextOrPrevPage(request, "mentors", "backward", "mentor_paginator")
+
     elif 'program' in request.POST and 'next_page' in request.POST:
       paginator_dict = json.loads(request.session['program_paginator'])
       paginator = tables.Paginator(**paginator_dict)

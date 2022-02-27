@@ -138,9 +138,9 @@ function getMentors(id) {
 	}
 		
 
-	var x = document.getElementById('mentor_pair_search_type');
-	var y = x.options[x.selectedIndex];
-	var z = document.getElementById('mentor_pair_search_entry');
+	var search_type_pulldown = document.getElementById('mentor_pair_search_type');
+	var search_type = search_type_pulldown.options[search_type_pulldown.selectedIndex];
+	var search_field = document.getElementById('mentor_pair_search_entry');
 
 	fetch('', {
 		method: 'POST',
@@ -150,13 +150,15 @@ function getMentors(id) {
 		},
 		body: new URLSearchParams({
 			'get_mentors': 'getMentors',
-			'search_type': y.value,
-			'search_entry': z.value
+			'search_type': search_type.value,
+			'search_entry': search_field.value
 		})
 	})
 	.then(response => response.json())
 	.then(data => {
 		table = document.getElementById('mentor-search-table');
+    document.getElementById('prev_page').disabled = true;
+    document.getElementById('next_page').disabled = !data.hasNext;
 
 		for (var i=0;mentor=data.mentors[i];i++) {
 			var newRow = table.insertRow();
@@ -169,7 +171,7 @@ function getMentors(id) {
 			firstCell.innerHTML = fullName;
 			secondCell.innerHTML = mentor.phone_number;
 			thirdCell.innerHTML = mentor.email;
-			fourthCell.innerHTML = "<button onClick=\"pairMentor('"+ id + "', '"  + mentor.id + "', '" + fullName + "', '" + newRow.rowIndex + "')\">Pair</button"; 
+			fourthCell.innerHTML = "<button onClick=\"pairMentor('"+ id + "', '"  + mentor.id + "', '" + fullName + "', '" + newRow.rowIndex + "')\">Pair</button>"; 
 		}
 
 	});
@@ -196,7 +198,8 @@ function pairMentor(id, mentor_id, fullName, rowIndex) {
 	var mentor_field = document.getElementById('paired_mentor');	
 	mentor_field.innerHTML = "<a href=\"/mentor/profile/" + mentor_id + "\">" + fullName + "</a>";
 
-	alert("Mentor Paired!");
+  var paired_msg = document.getElementById('paired_msg');
+  paired_msg.innerHTML = "Paired mentor " + fullName;
 }
 
 function getScholarships(id) {
