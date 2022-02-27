@@ -122,7 +122,6 @@ def studentProfile(request, id):
     else:
       comparison = str(str(int(x[0]) + 1) + '-' + '06' + '-' + '30')
 
-    """
     dt = datetime.datetime.strptime(h['student']['grade'], '%Y-%m-%d').date()
 
     comparison = datetime.datetime.strptime(comparison, '%Y-%m-%d').date()
@@ -137,7 +136,6 @@ def studentProfile(request, id):
       h['student']['grade'] = '12'
     else:
       h['student']['grade'] = 'Graduated'
-    """
 
     h['student']['district'] = school_districts[h['student']['school']]
 
