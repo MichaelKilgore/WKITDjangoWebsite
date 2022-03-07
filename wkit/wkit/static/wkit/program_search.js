@@ -8,8 +8,8 @@ function programNextPage() {
       'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
     },
     body: new URLSearchParams({
-      'next_page': num,
-      'program': true,
+      'action': 'next_page',
+      'current_page': num,
     })
   })	
   .then(response => response.json())
@@ -18,6 +18,8 @@ function programNextPage() {
 	    num  = (parseInt(num)+1);
       document.getElementById('page_num').innerHTML = num;
     }
+    document.getElementById('prev_page').disabled = num < 1;
+    document.getElementById('next_page').disabled = !data.hasNext;
 
     //for (var i=0;mentor=data.mentors[i];i++) {
     table = document.getElementById('program-search-table');
@@ -29,7 +31,7 @@ function programNextPage() {
     }
 
     for (var i=0;i<data.programs.length;i++) { 
-      var newRow = table.insertRow(1); 
+      var newRow = table.insertRow(-1);
       var firstCell = newRow.insertCell();
       var secondCell = newRow.insertCell();
       var thirdCell = newRow.insertCell();
@@ -53,8 +55,8 @@ function programLastPage() {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
       },
       body: new URLSearchParams({
-        'last_page': num,
-        'program': true,
+        'action': 'last_page',
+        'current_page': num,
       })
     })	
     .then(response => response.json())
@@ -64,6 +66,8 @@ function programLastPage() {
         num  = (parseInt(num)-1);
         document.getElementById('page_num').innerHTML = num;
       }
+      document.getElementById('prev_page').disabled = num <= 1;
+      document.getElementById('next_page').disabled = !data.hasNext;
       
       table = document.getElementById('program-search-table');
       var i=0;
@@ -74,7 +78,7 @@ function programLastPage() {
       }
 
       for (var i=0;i<data.programs.length;i++) { 
-        var newRow = table.insertRow(1); 
+        var newRow = table.insertRow(-1);
         var firstCell = newRow.insertCell();
         var secondCell = newRow.insertCell();
         var thirdCell = newRow.insertCell();

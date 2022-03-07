@@ -17,7 +17,9 @@
 	<td>
 	<label>Search by City: </label><br>
 		{% for key, city in cities.items  %}
-			<input type="checkbox" name="city" value="{{ city }}">
+			<input type="checkbox" name="city" value="{{ city }}"
+        {%if city in selected_cities %} checked{% endif %}
+      >
 			<label for="{{ city }}">{{ city }}</label><br>
 		{% endfor %}
 	</td>
@@ -30,7 +32,9 @@
   <div style="max-height:100px; overflow:auto; border:1px solid #000; background-color: coral;">
 		{% for interest in interests  %}
       <div style="height:25px">
-        <input type="checkbox" name="interest" value="{{ interest.interest }}">
+        <input type="checkbox" name="interest" value="{{ interest.interest }}"
+          {%if interest.interest in selected_interests %} checked{% endif %}
+        >
         <label for="{{ interest.interest }}">{{ interest.interest }}</label>
       </div>
 		{% endfor %}
@@ -41,12 +45,12 @@
 	<label>Search by time commitment: </label><br>
 		
 	<select id="search_duration" name="search_duration">
-		<option value="Any">Any</option>
-		<option value="40">less than 40 hrs/week</option>
-		<option value="30">less than 30 hrs/week</option>
-		<option value="20">less than 20 hrs/week</option>
-		<option value="10">less than 10 hrs/week</option>
-		<option value="5">less than 5 hrs/week</option>
+		<option value="9999" {% if request.POST.search_duration == "9999" %}selected{% endif %}>Any</option>
+		<option value="40" {% if request.POST.search_duration == "40" %}selected{% endif %}>40 hrs/week or less</option>
+		<option value="30" {% if request.POST.search_duration == "30" %}selected{% endif %}>30 hrs/week or less</option>
+		<option value="20" {% if request.POST.search_duration == "20" %}selected{% endif %}>20 hrs/week or less</option>
+		<option value="10" {% if request.POST.search_duration == "10" %}selected{% endif %}>10 hrs/week or less</option>
+		<option value="5" {% if request.POST.search_duration == "5" %}selected{% endif %}>5 hrs/week or less</option>
 	</select>
 	</td>
 </tr>
@@ -81,9 +85,9 @@
 
 <br>
 <div style="position: absolute; right: 150;">
-  <button onClick="programLastPage()")>&larr;</button>
+  <button id="prev_page" onClick="programLastPage()" {% if pageNum < 1 %}disabled{% endif %}>&larr;</button>
    <span id="page_num">1</span>
-  <button onClick="programNextPage()")>&rarr;</button>
+  <button id="next_page" onClick="programNextPage()" {% if not hasNext %} disabled{% endif %}>&rarr;</button>
 </div>
 <br>
 <br>

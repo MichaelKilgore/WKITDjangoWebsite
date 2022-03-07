@@ -562,7 +562,7 @@ async def insertProgram(program, id):
       'phone_number': program['phone_number'],
       'email': program['email'],
       'interest': program['interest'],
-      'time_commitment': program['time_commitment'],
+      'time_commitment': int(program['time_commitment']),
       'program_duration': program['program_duration'],
       'application_deadlines': program['application_deadlines'],
       'start_dates': program['start_dates'],
@@ -618,35 +618,45 @@ def scanPrograms():
   table = dynamodb.Table('wkit_program_table')
 
   return Paginator('wkit_program_table', 10)
-  #resp = table.scan()
-  #return resp['Items']
 
-# time commitments are stored in dynamodb as strings that are either:
-#   greater than 40 hrs/week
-#   ~40 hrs/week 
-#   ~20 hrs/week
-#   ~30 hrs/week
-#   ~10 hrs/week
-#   ~5 hrs/week
-#   less than 5 hrs/week
+
+# time commitments are stored in dynamodb as hours per week
+#   100 = greater than 40 hrs/week
+#   40 = ~40 hrs/week
+#   30 = ~30 hrs/week
+#   20 = ~20 hrs/week
+#   10 = ~10 hrs/week
+#   5 = ~5 hrs/week
+#   4 = less than 5 hrs/week
 
 #   this needs to search based off of the inputs given in queryPrograms
-def queryPrograms(search_name: str, city: [str], interest: [str], time_commitment: int):
-  """if search_type == 0: #search by email
-    return Paginator('wkit_student_table', 10, {
-      'IndexName': 'email-index',
-      'FilterExpression': Attr('email').contains(search_entry),
-    })
-  elif search_type == 1: #search by phone number
-    return Paginator('wkit_student_table', 10, {
-      'IndexName': 'phone_number-index',
-      'FilterExpression': Attr('phone_number').contains(search_entry),
-    })
-  else: #full scan
-    return Paginator('wkit_student_table', 10)"""
+def queryPrograms(search_name: str, city: [str], interests: [str], time_commitment: int):
+  expr = None
+  if search_name is not None and search_name != "":
+    print(f"queryPrograms(): add program_name = {search_name}")
+    expr = addClause(expr, Attr("program_name").contains(search_name))
 
-  pass
+  if len(city) > 0:
+    print(f"queryPrograms(): add city = {city}")
+    # find orgs in selected cities and match those orgs in programs table
+    # expr = addClause(expr, Attr("organizationID", org["id"]))
 
+  if len(interests) > 0:
+    print(f"queryPrograms(): add interests = {interests}")
+    interest_clause = Attr("interest").eq(interests[0])
+    if len(interests) > 1:
+      for interest in interests[1:]:
+        interest_clause = interest_clause | Attr("interest").eq(interest)
+    expr = addClause(expr, interest_clause)
+
+  # if time_commitment is not None and time_commitment != "" and time_commitment != "Any":
+  print(f"queryPrograms(): add time_commitment lte {time_commitment} type={type(time_commitment)}", flush=True)
+  expr = addClause(expr, Attr("time_commitment").lte(time_commitment))
+
+  print(f"program FilterExpression = {str(expr)}", flush=True)
+  return Paginator("wkit_program_table", 10, {
+    "FilterExpression": expr,
+  } if expr else {})
 
 
 

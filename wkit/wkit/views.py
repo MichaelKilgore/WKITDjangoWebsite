@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
@@ -400,7 +401,8 @@ def searchProgram(request):
   if request.method == 'GET':
     h, h['cities'], h['interests'] = {}, cities, tables.getInterests()
     paginator = tables.scanPrograms()
-    h['programs'] = paginator.getPage(0, label)['programs']
+    programs = paginator.getPage(0, label)
+    h = {**h, **programs}
 
     allOrganizations = tables.getOrganizations()
     orgHash = {}
@@ -413,63 +415,50 @@ def searchProgram(request):
         program['city'] = orgHash[program['organizationID']]
 
     print('programs: ', h['programs'])
-    request.session['paginator'] = json.dumps(vars(paginator))
+    request.session['paginator'] = jsonpickle.encode(paginator)
     return render(request, 'wkit/Programs/searchProgram.html', h)
+
+  elif 'action' in request.POST and request.POST['action'] == 'next_page':
+    return nextOrPrevPage(request, label, 'forward')
+
+  elif 'action' in request.POST and request.POST['action'] == 'last_page':
+    return nextOrPrevPage(request, label, 'backward')
+
+  elif request.POST['program_name'].strip() == "" and request.POST['search_duration'] == 'Any' and 'city' not in request.POST and 'interest' not in request.POST:
+    paginator = tables.scanPrograms()
+    data = paginator.getPage(0, label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
+
+    return populateAndRenderProgramSearch(request, data)
+
   else:
-    if 'next_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['next_page'])+1, label)['programs']
+    city_choices = request.POST.getlist("city") if "city" in request.POST else []
+    interests = request.POST.getlist("interest") if "interest" in request.POST else []
+    paginator = tables.queryPrograms(
+      request.POST["program_name"], city_choices, interests, int(request.POST["search_duration"])
+    )
+    data = paginator.getPage(0, label)
+    request.session['paginator'] = jsonpickle.encode(paginator)
 
-      allOrganizations = tables.getOrganizations()
-      orgHash = {}
+    return populateAndRenderProgramSearch(request, data)
 
-      for org in allOrganizations:
-        orgHash[org['id']] = org['city']
 
-      for program in allPrograms['programs']:
-        if (orgHash[program['organizationID']]):
-          program['city'] = orgHash[program['organizationID']]
+def populateAndRenderProgramSearch(request, data: Dict[str, Any]):
+    data['cities'], data['interests'] = cities, tables.getInterests()
+    data['selected_cities'] = request.POST.getlist("city") if "city" in request.POST else []
+    data['selected_interests'] = request.POST.getlist("interest") if "interest" in request.POST else []
 
-      return JsonResponse(allPrograms)
-    elif 'last_page' in request.POST:
-      paginator_dict = json.loads(request.session['paginator'])
-      paginator = tables.Paginator(**paginator_dict)
-      if (int(request.POST['last_page'])-1 >= 0):
-        allPrograms, allPrograms['programs'] = {}, paginator.getPage(int(request.POST['last_page'])-1, label)['programs']
+    allOrganizations = tables.getOrganizations()
+    orgHash = {}
 
-        allOrganizations = tables.getOrganizations()
-        orgHash = {}
+    for org in allOrganizations:
+      orgHash[org['id']] = org['city']
 
-        for org in allOrganizations:
-          orgHash[org['id']] = org['city']
+    for program in data["programs"]:
+      if (orgHash[program['organizationID']]):
+        program['city'] = orgHash[program['organizationID']]
 
-        for program in allPrograms['programs']:
-          if (orgHash[program['organizationID']]):
-            program['city'] = orgHash[program['organizationID']]
-
-        return JsonResponse(allPrograms)
-
-      return JsonResponse({})
-    elif request.POST['program_name'] == "" and request.POST['search_duration'] == 'Any' and 'city' not in request.POST and 'interest' not in request.POST:
-        allPrograms, allPrograms['programs'] = {}, tables.scanPrograms()
-        allPrograms['cities'], allPrograms['interests'] = cities, tables.getInterests()
-
-        allOrganizations = tables.getOrganizations()
-        orgHash = {}
-  
-        for org in allOrganizations:
-          orgHash[org['id']] = org['city']
-
-        for program in allPrograms['programs']:
-          if (orgHash[program['organizationID']]):
-            program['city'] = orgHash[program['organizationID']]
-        
-
-        return render(request, 'wkit/Programs/searchProgram.html', allPrograms)
-    else:
-        allPrograms, allPrograms['programs'] = {}, tables.queryPrograms()
-        return render(request, 'wkit/Programs/searchProgram.html', allPrograms)
+    return render(request, 'wkit/Programs/searchProgram.html', data)
 
 
 @login_required(login_url = login_url)
